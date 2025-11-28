@@ -8,7 +8,7 @@ Implementation of adder and multiplier presented in the paper:
 from psiqworkbench import QUInt
 from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
-from ..utils import Qubit, ccnot, controlled_swap
+from ..utils.qubit import Qubit, ccnot, controlled_swap
 
 from .multiplier import Multiplier
 from ..utils.rotate import rotate_right
@@ -31,8 +31,13 @@ def _add_nop(p: list[Qubit], b: list[Qubit], am: Qubit):
 
 @implements(Multiplier)
 class JhhaMultipler(Qubrick):
+    """Computes result+=a*b (mod 2^(2n)).
+
+    Requires that registers a and b are of the same size n, and register
+    `result` is of size 2n.
+    """
+
     def _compute(self, a: QUInt, b: QUInt, result: QUInt) -> None:
-        """Computes p+=a*b (mod 2^n)."""
         n = len(a)
         assert len(b) == n, "Register sizes must match."
         assert len(result) == 2 * n, "Register sizes must match."

@@ -9,7 +9,7 @@ from psiqworkbench import QUInt
 from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.interoperability import implements
 
-from ..utils import cnot, ccnot, Qubit
+from ..utils.qubit import cnot, ccnot, Qubit
 from .multiplier import Multiplier
 
 
@@ -53,6 +53,12 @@ def _ctrl_add(ctrl: Qubit, a: list[Qubit], b: list[Qubit], z0: Qubit, z1: Qubit)
 
 @implements(Multiplier)
 class MctMultipler(Qubrick):
+    """Computes result+=a*b (mod 2^(2n)).
+
+    Requires that size of result register is equal to sum of sizes of input
+    registers.
+    """
+
     def _compute(self, a: QUInt, b: QUInt, result: QUInt) -> None:
         n1 = len(a)
         n2 = len(b)

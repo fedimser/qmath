@@ -1,48 +1,119 @@
-# From https://github.com/fedimser/quant-arith-re/blob/main/lib/src/QuantumArithmetic/CDKM2004.qs
-# https://arxiv.org/pdf/quant-ph/0410184
-# Unoptimized version
-# TODO: complete implementation (incl. optimized version + control).
+"""
+Implementation of the adder presented in paper:
+   A new quantum ripple-carry addition circuit
+   Cuccaro, Draper, Kutin, Moulton, 2004.
+   https://arxiv.org/pdf/quant-ph/0410184
+"""
 
 from typing import Optional
 
 from psiqworkbench import Qubits
-from psiqworkbench.interfaces import Adder
+from psiqworkbench.interfaces import Adder, AdderWithCarry
 from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
 
-from ..utils import Qubit, ccnot, cnot
+from ..utils.qubit import Qubit, ccnot, cnot
 
 
-def MAJ(a: Qubit, b: Qubit, c: Qubit):
+def _maj(a: Qubit, b: Qubit, c: Qubit):
     cnot(c, b)
     cnot(c, a)
     ccnot(a, b, c)
 
 
-def UMA_v1(a: Qubits, b: Qubits, c: Qubits):
-    # Do some changes...
+# UnMajority and Add (2-CNOT version).
+def _uma_v1(a: Qubit, b: Qubit, c: Qubit):
     ccnot(a, b, c)
     cnot(c, a)
     cnot(a, b)
 
 
+# Simple (unoptimized) version of the adder, from §2.
+# Computes b:=(a+b)%(2^n); z⊕=(a+b)/(2^n).
+def _add_simple(qbk: Qubrick, a: list[Qubit], b: list[Qubit], z: Qubit):
+    n = len(a)
+    assert len(b) == n, "Register sizes must match."
+    c = Qubit(qbk.alloc_temp_qreg(1, "c"))
+
+    _maj(c, b[0], a[0])
+    for i in range(1, n):
+        _maj(a[i - 1], b[i], a[i])
+    cnot(a[n - 1], z)
+    for i in range(n - 1, 0, -1):
+        _uma_v1(a[i - 1], b[i], a[i])
+    _uma_v1(c, b[0], a[0])
+
+    c.release()
+
+
+# Optimized adder, from §3.
+# Computes b:=(a+b)%(2^n); z⊕=(a+b)/(2^n).
+def _add_optimized(qbk: Qubrick, a: list[Qubit], b: list[Qubit], z: Qubit):
+    n = len(a)
+    assert len(b) == n, "Register sizes must match."
+    assert n >= 4, "n must be at least 4."
+    c = Qubit(qbk.alloc_temp_qreg(1, "c"))
+
+    for i in range(1, n):
+        cnot(a[i], b[i])
+    cnot(a[1], c)
+    ccnot(a[0], b[0], c)
+    cnot(a[2], a[1])
+    ccnot(c, b[1], a[1])
+    cnot(a[3], a[2])
+    for i in range(2, n - 2):
+        ccnot(a[i - 1], b[i], a[i])
+        cnot(a[i + 2], a[i + 1])
+    ccnot(a[n - 3], b[n - 2], a[n - 2])
+    cnot(a[n - 1], z)
+    ccnot(a[n - 2], b[n - 1], z)
+    for i in range(1, n - 1):
+        b[i].x()
+    cnot(c, b[1])
+    for i in range(2, n):
+        cnot(a[i - 1], b[i])
+    ccnot(a[n - 3], b[n - 2], a[n - 2])
+    for i in range(n - 3, 1, -1):
+        ccnot(a[i - 1], b[i], a[i])
+        cnot(a[i + 2], a[i + 1])
+        b[i + 1].x()
+    ccnot(c, b[1], a[1])
+    cnot(a[3], a[2])
+    b[2].x()
+    ccnot(a[0], b[0], c)
+    cnot(a[2], a[1])
+    b[1].x()
+    cnot(a[1], c)
+    for i in range(n):
+        cnot(a[i], b[i])
+
+    c.release()
+
+
 @implements(Adder[Qubits, Qubits])
 class CdkmAdder(Qubrick):
+    def __init__(self, *, optimized: bool = True, **kwargs):
+        super().__init__(**kwargs)
+        self.optimized = optimized
+
     def _compute(self, lhs: Qubits, rhs: Qubits, ctrl: Optional[Qubits] = None):
-        assert isinstance(lhs, Qubits)
-        assert isinstance(rhs, Qubits)
-        assert ctrl is None, "Control not yet supported."
-
-        n = len(rhs)
-        assert len(lhs) == n
-
-        C = self.alloc_temp_qreg(1, "C")
-
-        MAJ(C, lhs[0], rhs[0])
-        for i in range(1, n):
-            MAJ(rhs[i - 1], lhs[i], rhs[i])
-        for i in range(n - 1, 0, -1):
-            UMA_v1(rhs[i - 1], lhs[i], rhs[i])
-        UMA_v1(C, lhs[0], rhs[0])
-
-        C.release()
+        assert ctrl is None, "Control is not supported."
+        b = Qubit.list(lhs)
+        a = Qubit.list(rhs)
+        n = len(a)
+        # We want to compute b += a.
+        if len(b) == n:
+            # Addition modulo 2^n.
+            if n >= 5 and self.optimized:
+                _add_optimized(self, a[0 : n - 1], b[0 : n - 1], b[n - 1])
+            elif n >= 2:
+                _add_simple(self, a[0 : n - 1], b[0 : n - 1], b[n - 1])
+            cnot(a[n - 1], b[n - 1])
+        elif len(b) == n + 1:
+            # Addition wth carry.
+            if n >= 4 and self.optimized:
+                _add_optimized(self, a, b[0:n], b[n])
+            else:
+                _add_simple(self, a, b[0:n], b[n])
+        else:
+            raise ValueError(f"Register size mismatch: {len(a)} and {len(b)}.")

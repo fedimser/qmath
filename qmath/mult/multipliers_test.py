@@ -1,6 +1,8 @@
 import random
 
+import pytest
 from psiqworkbench import QPU, QUInt
+
 from qmath.mult import JhhaMultipler, MctMultipler, Multiplier
 
 
@@ -22,9 +24,11 @@ def _check_multiplier(multiplier: Multiplier, num_bits):
         assert c.read() == x * y
 
 
-def test_mct_multiplier():
-    _check_multiplier(MctMultipler(), 10)
+@pytest.mark.parametrize("num_bits", [1, 2, 5, 10])
+def test_mct_multiplier(num_bits: int):
+    _check_multiplier(MctMultipler(), num_bits)
 
 
-def test_jhha_multiplier():
-    _check_multiplier(JhhaMultipler(), 10)
+@pytest.mark.parametrize("num_bits", [1, 2, 5, 10])
+def test_jhha_multiplier(num_bits: int):
+    _check_multiplier(JhhaMultipler(num_bits), 10)
