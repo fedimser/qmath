@@ -20,6 +20,7 @@ def MAJ(a: Qubit, b: Qubit, c: Qubit):
 
 
 def UMA_v1(a: Qubits, b: Qubits, c: Qubits):
+    # Do some changes...
     ccnot(a, b, c)
     cnot(c, a)
     cnot(a, b)
