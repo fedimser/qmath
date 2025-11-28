@@ -40,12 +40,12 @@ def test_adder_gidney():
     _check_adder(qbk.GidneyAdd(), (10, 5))
 
 
-@pytest.mark.parametrize("num_bits", [(1, 1), (2, 1), (2, 2), (8, 8), (10, 10), (10, 9), (20, 20)])
+@pytest.mark.parametrize("num_bits", [(1, 1), (2, 1), (2, 2), (8, 8), (10, 10), (10, 9), (10, 5), (20, 20)])
 def test_adder_cdkm_unoptimized(num_bits: tuple[int, int]):
     _check_adder(CDKMAdder(optimized=False), num_bits)
 
 
-@pytest.mark.parametrize("num_bits", [(1, 1), (2, 1), (2, 2), (8, 8), (10, 10), (10, 9), (20, 20)])
+@pytest.mark.parametrize("num_bits", [(1, 1), (2, 1), (2, 2), (8, 8), (10, 10), (10, 9), (10, 5), (20, 20)])
 def test_adder_cdkm_optimized(num_bits: int):
     _check_adder(CDKMAdder(optimized=True), num_bits)
 

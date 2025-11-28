@@ -101,22 +101,23 @@ class CDKMAdder(Qubrick):
 
     def _compute(self, lhs: QUInt, rhs: QUInt, ctrl: Optional[Qubits] = None):
         assert ctrl is None, "Control is not supported."
-        b = Qubit.list(lhs)
-        a = Qubit.list(rhs)
-        n = len(a)
-        # We want to compute b += a.
-        if len(b) == n:
+        assert len(lhs) >= len(rhs), "Register `lhs` must be longer than register `rhs`."
+        n = len(rhs)
+        if len(lhs) == n:
             # Addition modulo 2^n.
             if n >= 5 and self.optimized:
-                _add_optimized(self, a[0 : n - 1], b[0 : n - 1], b[n - 1])
+                _add_optimized(self, rhs[0 : n - 1], lhs[0 : n - 1], lhs[n - 1])
             elif n >= 2:
-                _add_simple(self, a[0 : n - 1], b[0 : n - 1], b[n - 1])
-            cnot(a[n - 1], b[n - 1])
-        elif len(b) == n + 1:
+                _add_simple(self, rhs[0 : n - 1], lhs[0 : n - 1], lhs[n - 1])
+            cnot(rhs[n - 1], lhs[n - 1])
+        elif len(lhs) == n + 1:
             # Addition with carry.
             if n >= 4 and self.optimized:
-                _add_optimized(self, a, b[0:n], b[n])
+                _add_optimized(self, rhs, lhs[0:n], lhs[n])
             else:
-                _add_simple(self, a, b[0:n], b[n])
+                _add_simple(self, rhs, lhs[0:n], lhs[n])
         else:
-            raise ValueError(f"Register size mismatch: {len(a)} and {len(b)}.")
+            assert len(lhs) > len(rhs) + 1
+            padding: Qubits = self.alloc_temp_qreg(len(lhs) - len(rhs) - 1, "padding")
+            self._compute(lhs, rhs | padding)
+            padding.release()
