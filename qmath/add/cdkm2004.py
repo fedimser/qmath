@@ -28,21 +28,21 @@ def UMA_v1(a: Qubits, b: Qubits, c: Qubits):
 
 @implements(Adder[Qubits, Qubits])
 class CdkmAdder(Qubrick):
-    def _compute(self, B: Qubits | int, A: Qubits | int, ctrl: Optional[Qubits] = None):
-        assert isinstance(A, Qubits)
-        assert isinstance(B, Qubits)
+    def _compute(self, lhs: Qubits, rhs: Qubits, ctrl: Optional[Qubits] = None):
+        assert isinstance(lhs, Qubits)
+        assert isinstance(rhs, Qubits)
         assert ctrl is None, "Control not yet supported."
 
-        n = len(A)
-        assert len(B) == n
+        n = len(rhs)
+        assert len(lhs) == n
 
         C = self.alloc_temp_qreg(1, "C")
 
-        MAJ(C, B[0], A[0])
+        MAJ(C, lhs[0], rhs[0])
         for i in range(1, n):
-            MAJ(A[i - 1], B[i], A[i])
+            MAJ(rhs[i - 1], lhs[i], rhs[i])
         for i in range(n - 1, 0, -1):
-            UMA_v1(A[i - 1], B[i], A[i])
-        UMA_v1(C, B[0], A[0])
+            UMA_v1(rhs[i - 1], lhs[i], rhs[i])
+        UMA_v1(C, lhs[0], rhs[0])
 
         C.release()

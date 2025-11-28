@@ -53,12 +53,12 @@ def _ctrl_add(ctrl: Qubit, a: list[Qubit], b: list[Qubit], z0: Qubit, z1: Qubit)
 
 @implements(Multiplier)
 class MctMultipler(Qubrick):
-    def _compute(self, a: QUInt, b: QUInt, c: QUInt) -> None:
+    def _compute(self, a: QUInt, b: QUInt, result: QUInt) -> None:
         n1 = len(a)
         n2 = len(b)
-        assert len(c) == n1 + n2, "Size mismatch."
+        assert len(result) == n1 + n2, "Size mismatch."
         anc: Qubit = Qubit(self.alloc_temp_qreg(1, "anc"))
-        p: list[Qubit] = Qubit.list(c) + [anc]
+        p: list[Qubit] = Qubit.list(result) + [anc]
 
         # Step 1.
         for i in range(n1):

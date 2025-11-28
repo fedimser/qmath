@@ -30,17 +30,17 @@ def _add_nop(p: list[Qubit], b: list[Qubit], am: Qubit):
 
 @implements(Multiplier)
 class JhhaMultipler(Qubrick):
-    def _compute(self, a: QUInt, b: QUInt, p: QUInt) -> None:
+    def _compute(self, a: QUInt, b: QUInt, result: QUInt) -> None:
         """Computes p+=a*b (mod 2^n)."""
         n = len(a)
         assert len(b) == n, "Register sizes must match."
-        assert len(p) == 2 * n, "Register sizes must match."
+        assert len(result) == 2 * n, "Register sizes must match."
         z_cin: Qubit = Qubit(self.alloc_temp_qreg(1, "anc"))
         b1: list[Qubit] = [z_cin] + Qubit.list(b)
 
         for i in range(n - 1):
-            _add_nop(p[n - 1 : 2 * n], b1, a[i])
-            rotate_right(p)
-        _add_nop(p[n - 1 : 2 * n], b1, a[n - 1])
+            _add_nop(result[n - 1 : 2 * n], b1, a[i])
+            rotate_right(result)
+        _add_nop(result[n - 1 : 2 * n], b1, a[n - 1])
 
         z_cin.release()
