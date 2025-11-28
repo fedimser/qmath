@@ -85,6 +85,13 @@ def test_adder_cdkm_optimized(num_bits: tuple[int, int]):
     _check_adder(CDKMAdder(optimized=True), n1, n2)
 
 
+def test_adder_cdkm_controlled():
+    _check_controlled_adder(CDKMAdder(optimized=False), 5, 4)
+    _check_controlled_adder(CDKMAdder(optimized=False), 5, 5)
+    _check_controlled_adder(CDKMAdder(optimized=True), 5, 4)
+    _check_controlled_adder(CDKMAdder(optimized=True), 5, 5)
+
+
 @pytest.mark.parametrize("num_bits", [(1, 1), (2, 1), (2, 2), (8, 8), (10, 10), (10, 9), (10, 5), (20, 20)])
 def test_adder_ttk(num_bits: tuple[int, int]):
     n1, n2 = num_bits
@@ -92,5 +99,5 @@ def test_adder_ttk(num_bits: tuple[int, int]):
 
 
 def test_adder_ttk_controlled():
-    _check_controlled_adder(TTKAdder(), 3, 3)
-    _check_controlled_adder(TTKAdder(), 4, 3, num_trials=10)
+    _check_controlled_adder(TTKAdder(), 5, 5)
+    _check_controlled_adder(TTKAdder(), 5, 4, num_trials=10)

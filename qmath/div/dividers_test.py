@@ -42,3 +42,5 @@ def test_tmvh_divider_non_restoring(num_bits: tuple[int, int]):
 def test_tmvh_different_adders():
     _check_divider(TMVHDivider(restoring=False, adder=TTKAdder()), (10, 10))
     _check_divider(TMVHDivider(restoring=True, adder=TTKAdder()), (10, 10))
+    _check_divider(TMVHDivider(restoring=False, adder=CDKMAdder()), (10, 10))
+    _check_divider(TMVHDivider(restoring=True, adder=CDKMAdder()), (10, 10))
