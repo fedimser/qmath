@@ -6,7 +6,7 @@ from psiqworkbench import QPU, QUInt
 from qmath.mult import JHHAMultipler, MCTMultipler, Multiplier
 
 
-def _check_multiplier(multiplier: Multiplier, num_bits):
+def _check_multiplier(multiplier: Multiplier, num_bits, num_trials=5):
     qc = QPU(filters=[">>64bit>>", ">>bit-sim>>"])
     qc.reset(4 * num_bits + 1)
 
@@ -14,7 +14,7 @@ def _check_multiplier(multiplier: Multiplier, num_bits):
     b = QUInt(num_bits, "b", qc)
     c = QUInt(2 * num_bits, "c", qc)
 
-    for _ in range(10):
+    for _ in range(num_trials):
         x = random.randint(0, 2**num_bits - 1)
         y = random.randint(0, 2**num_bits - 1)
         a.write(x)
