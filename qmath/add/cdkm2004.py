@@ -6,6 +6,7 @@ from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
 
 from ..utils.gates import ccnot, cnot
+from ..utils.padding import padded
 
 
 def _maj(a: Qubits, b: Qubits, c: Qubits):
@@ -119,7 +120,7 @@ class CDKMAdder(Qubrick):
             else:
                 _add_simple(self, rhs, lhs[0:n], lhs[n])
         else:
-            assert len(lhs) > len(rhs) + 1
-            padding: Qubits = self.alloc_temp_qreg(len(lhs) - len(rhs) - 1, "padding")
-            self._compute(lhs, rhs | padding)
-            padding.release()
+            assert len(rhs) < len(lhs) - 1
+            with padded(self, (rhs,), (len(lhs) - 1,)) as (rhs,):
+                assert len(rhs) == len(lhs) - 1
+                self._compute(lhs, rhs)
