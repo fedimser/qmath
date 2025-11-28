@@ -5,7 +5,7 @@ import pytest
 from psiqworkbench import QPU, QUInt
 from psiqworkbench.interfaces import Adder
 
-from qmath.add import CdkmAdder
+from qmath.add import CdkmAdder, TTKAdder
 
 
 # Tests in-place adder when both registers are of the same size and result is
@@ -62,3 +62,9 @@ def test_adder_cdkm_unoptimized(num_bits: int):
 def test_adder_cdkm_optimized(num_bits: int):
     _check_adder_modular(CdkmAdder(optimized=True), num_bits)
     _check_adder_with_carry_out(CdkmAdder(optimized=True), num_bits)
+
+
+@pytest.mark.parametrize("num_bits", [1, 2, 3, 8, 20])
+def test_adder_ttk(num_bits: int):
+    _check_adder_modular(TTKAdder(), num_bits)
+    _check_adder_with_carry_out(TTKAdder(), num_bits)
