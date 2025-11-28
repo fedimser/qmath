@@ -1,9 +1,12 @@
+fail_fast: true
+
 repos:
   - repo: https://github.com/psf/black
     rev: 25.11.0
     hooks:
       - id: black
         language_version: python3.12
+        args: [--check]
   - repo: local
     hooks:
       - id: pytest

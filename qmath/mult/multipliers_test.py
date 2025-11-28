@@ -28,7 +28,3 @@ def test_mct_multiplier():
 
 def test_jhha_multiplier():
     _check_multiplier(JhhaMultipler(), 10)
-
-
-def test_passing():
-    assert 1 == 1

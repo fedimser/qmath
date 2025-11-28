@@ -12,7 +12,7 @@ def _check_adder(adder: Adder, num_bits):
 
     a = QUInt(num_bits, "a", qc)
     b = QUInt(num_bits, "b", qc)
-    for _ in range(1):
+    for _ in range(10):
         x = random.randint(0, 2**num_bits - 1)
         y = random.randint(0, 2**num_bits - 1)
         expected = (x + y) % (2**num_bits)

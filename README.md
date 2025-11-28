@@ -45,13 +45,13 @@ algorithm was described, with reference to the paper at the top.
 
 ### Setup
 
-Clone repository into /home/coder/projects in PsiQDE instance. Then:
+Clone repository into `/home/coder/projects` in PsiQDE instance. Then:
 
 ```
 cd /home/coder/projects/qmath
-python -m pip install .[dev]  # Install dependencies.
-pre-commit install            # Install pre-commit hooks.
-pytest                        # Run tests, make sure they pass.
+python -m pip install -e .[dev]  # Install dependencies.
+pre-commit install               # Install pre-commit hooks.
+pytest                           # Run tests.
 ```
 
 ### Testing
@@ -69,10 +69,12 @@ Recommended setup for VSCode is:
 ### Pre-commit hooks
 
 This repository uses pre-commit hooks to run formatter and all tests. 
-* If your commit fails because
+* If "black" hook fails, you need to re-format-code, just run `black .`.
+* If "pytest" hook fails, you need to fix failing tests.
+* After fixing the issue, commit again.
 
 
 This is necessary because we currently cannot run tests on Gihub Actions.
 
-In the future, if tests will take too long, we will run allow marking some of 
-them as "slow", and run only "fast" tests on pre-commit hook.
+In the future, if tests will take too long, we will allow marking some of them 
+as "slow", and run only "fast" tests on pre-commit hook.
