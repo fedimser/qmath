@@ -2,7 +2,7 @@ from psiqworkbench import Qubits, QUInt
 from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
 
-from ..utils.gates import ccnot, controlled_swap
+from ..utils.gates import ccnot
 from ..utils.rotate import rotate_right
 from .multiplier import Multiplier
 
@@ -16,10 +16,10 @@ def _add_nop(p: Qubits, b: Qubits, am: Qubits):
 
     for i in range(n):
         ccnot(am, b[i + 1], p[i])
-        controlled_swap(p[i], b[i], b[i + 1])
+        b[i].swap(b[i + 1], condition_mask=p[i])
     ccnot(am, b[n], p[n])
     for i in range(n - 1, -1, -1):
-        controlled_swap(p[i], b[i], b[i + 1])
+        b[i].swap(b[i + 1], condition_mask=p[i])
         ccnot(am, b[i], p[i])
 
 
