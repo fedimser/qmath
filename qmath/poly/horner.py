@@ -15,15 +15,17 @@ class HornerScheme(Qubrick):
         self.coefs = coefs
 
     def _compute(self, x: QFixed):
-        # Computes ax + k.
-        def linear(a: QFixed, k: QFixed) -> QFixed:
+        # Computes ax + b.
+        def linear(a: QFixed, b: float) -> QFixed:
             result = QFixed(self.alloc_temp_qreg(x.num_qubits, "a"), radix=x.radix)
             qbk.GidneyMultiplyAdd().compute(result, a, x)
-            qbk.GidneyAdd().compute(result, k)
+            if abs(b) > 1e-15:
+                qbk.GidneyAdd().compute(result, b)
             return result
 
+        # TODO: skip allocating first register by doing with quantum-classical multiplication on first step.
         a = QFixed(self.alloc_temp_qreg(x.num_qubits, "a"), radix=x.radix)
         a.write(self.coefs[-1])
-        for k in self.coefs[:-1][::-1]:
-            a = linear(a, k)
+        for b in self.coefs[:-1][::-1]:
+            a = linear(a, b)
         self.set_result_qreg(a)
