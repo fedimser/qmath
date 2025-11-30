@@ -1,4 +1,4 @@
 """Quantum algorithms for evaluating polynomials and polynomial approximations."""
 
 from .horner import HornerScheme
-from .piecewise import EvalFunctionPPA
+from .piecewise import EvalFunctionPPA, WritePieceNumber

@@ -1,8 +1,9 @@
-from psiqworkbench import QFixed, QUInt, Qubits
+from typing import Optional
+
+from psiqworkbench import QFixed, Qubits, QUInt
 from psiqworkbench.qubricks import Qubrick
 
-
-from typing import Optional
+from .gates import write_uint
 
 
 class TableLookup(Qubrick):
@@ -11,18 +12,12 @@ class TableLookup(Qubrick):
     Reference: https://arxiv.org/pdf/1805.03662 (fig. 7).
     """
 
-    def _write_number(self, ctrl: Qubits, target: QUInt, number: int):
-        # Writes target ⊕= number*ctrl.
-        assert 0 <= number < 2**target.num_qubits
-        for i in range(target.num_qubits):
-            if (number >> i) % 2 == 1:
-                target[i].x(ctrl)
-
     def _lookup_ctrl(self, ctrl: Qubits, address: Optional[Qubits], target: QUInt, table: list[int]):
         if len(table) == 0:
             return
         if address is None:
-            self._write_number(ctrl, target, table[0])
+            assert len(table) == 1
+            write_uint(target, table[0], ctrl=ctrl)
             return
 
         m = len(address)
@@ -44,6 +39,7 @@ class TableLookup(Qubrick):
         assert 2 ** (m - 1) < len(table), "Address is too long."
         assert len(table) <= 2**m, "Table is too long."
         address[m - 1].x()
-        self._lookup_ctrl(address[m - 1], address[0 : m - 1], target, table[0 : 2 ** (m - 1)])
+        address_rec = address[0 : m - 1] if m > 1 else None
+        self._lookup_ctrl(address[m - 1], address_rec, target, table[0 : 2 ** (m - 1)])
         address[m - 1].x()
-        self._lookup_ctrl(address[m - 1], address[0 : m - 1], target, table[2 ** (m - 1) :])
+        self._lookup_ctrl(address[m - 1], address_rec, target, table[2 ** (m - 1) :])
