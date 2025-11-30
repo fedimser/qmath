@@ -7,6 +7,8 @@ from psiqworkbench import QPU, QFixed, QUInt
 
 from qmath.poly import WritePieceNumber, EvalPiecewisePolynomial, PiecewisePolynomial, Piece, EvalFunctionPPA
 
+RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
+
 
 def test_write_piece_number():
     qpu = QPU(filters=[">>64bit>>", ">>bit-sim>>"])
@@ -45,3 +47,17 @@ def test_eval_piecewise_polynomial():
         func.compute(qx)
         result = func.get_result_qreg().read()
         assert result == poly.eval(x)
+
+
+@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
+def test_eval_sin():
+    qpu = QPU(filters=[">>64bit>>", ">>bit-sim>>", ">>buffer>>", ">>capture>>"])
+    func = EvalFunctionPPA(np.sin, interval=(-1, 1), degree=3, error_tol=1e-4)
+
+    for x in [0.5, 0.8, 1.0]:
+        qpu.reset(500)
+        qx = QFixed(20, name="qx", radix=15, qpu=qpu)
+        qx.write(x)
+        func.compute(qx)
+        result = func.get_result_qreg().read()
+        assert np.abs(result - np.sin(x)) < 1e-4
