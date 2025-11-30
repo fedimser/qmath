@@ -19,3 +19,10 @@ def write_uint(target: QUInt, number: int, ctrl: Optional[Qubits] = None):
     for i in range(target.num_qubits):
         if (number >> i) % 2 == 1:
             target[i].x(ctrl)
+
+
+def parallel_cnot(a: Qubits, b: Qubits):
+    n = len(a)
+    assert len(b) == n
+    for i in range(n):
+        b[i].x(a[i])

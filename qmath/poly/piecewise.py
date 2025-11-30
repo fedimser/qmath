@@ -11,10 +11,10 @@ from typing import Callable
 
 import numpy as np
 import psiqworkbench.qubricks as qbk
-from psiqworkbench import QFixed, QUInt
+from psiqworkbench import QFixed, QUInt, Qubits
 from psiqworkbench.qubricks import Qubrick
 
-from ..utils.gates import write_uint
+from ..utils.gates import write_uint, parallel_cnot
 from ..utils.lookup import TableLookup
 from .horner import HornerScheme
 from .remez import remez_piecewise, PiecewisePolynomial
@@ -188,19 +188,29 @@ class EvalFunctionPPA(Qubrick):
         else:
             self.poly = remez_piecewise(f, interval, degree, error_tol)
 
+    # TODO: qbk.Square instead.
+    def _square(self, x: QFixed) -> QFixed:
+        x_reg = Qubits(x)
+        x_copy_reg: Qubits = self.alloc_temp_qreg(x.num_qubits, "x_copy")
+        x_sq = QFixed(self.alloc_temp_qreg(x.num_qubits, "x_sq"), radix=x.radix)
+        x_copy = QFixed(x_copy_reg, radix=x.radix)
+
+        parallel_cnot(x_reg, x_copy_reg)
+        qbk.GidneyMultiplyAdd().compute(x_sq, x, x_copy)
+        parallel_cnot(x_reg, x_copy_reg)
+        x_copy_reg.release()
+        return x_sq
+
     def _compute(self, x: QFixed):
         epp = EvalPiecewisePolynomial(self.poly)
-
         if self.is_odd or self.is_even:
-            # x_sq := x^2 (TODO: use qbk.Square).
-            x_sq = QFixed(self.alloc_temp_qreg(x.num_qubits, "x_sq"), radix=x.radix)
-            qbk.GidneyMultiplyAdd().compute(x_sq, x, x)
+            x_sq = self._square(x)
             epp.compute(x_sq)
             if self.is_even:
-                # Return poly(x_sq).
+                # Return poly(x^2).
                 self.set_result_qreg(epp.get_result_qreg())
             else:
-                # Return ans := poly(x_sq)*x.
+                # Return ans := poly(x^2)*x.
                 ans = QFixed(self.alloc_temp_qreg(x.num_qubits, "ans"), radix=x.radix)
                 qbk.GidneyMultiplyAdd().compute(ans, epp.get_result_qreg(), x)
                 self.set_result_qreg(ans)
