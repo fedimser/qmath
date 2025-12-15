@@ -9,6 +9,7 @@ from psiqworkbench import QPU, QFixed
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.poly import HornerScheme
+from qmath.utils.test_utils import QPURecorder
 
 RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
 
@@ -28,18 +29,23 @@ def test_horner_linear(coefs: list[float]):
 
 @pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
 def test_horner_random():
-    qpu = QPU(filters=[">>64bit>>", ">>bit-sim>>"])
+    qpu = QPU(filters=BIT_DEFAULT)
     qpu.reset(500)
     coefs = [5.1, -4.2, 0.8]
+    q_x = QFixed(30, name="x", radix=16, qpu=qpu)
+    rec = QPURecorder(qpu)
+    hs = HornerScheme(coefs)
+    hs.compute(q_x)
+    q_result = hs.get_result_qreg()
+    rec.record_computation()
+
     num_trials = 2
 
     for _ in range(num_trials):
         x = -10 + 20 * random.random()
-        hs = HornerScheme(coefs)
-        qx = QFixed(30, name="qx", radix=16, qpu=qpu)
-        qx.write(x)
-        hs.compute(qx)
-        result = hs.get_result_qreg().read()
-        hs.uncompute()
+        rec.restore_initial_state()
+        q_x.write(x)
+        rec.apply_computation()
+        result = q_result.read()
         expected = sum(k * x**i for i, k in enumerate(coefs))
         assert np.isclose(result, expected, atol=1e-3)

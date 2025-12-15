@@ -6,6 +6,7 @@ import pytest
 from psiqworkbench import QPU, QFixed, QUInt
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
+from qmath.utils.test_utils import QPURecorder
 from qmath.poly import WritePieceNumber, EvalPiecewisePolynomial, PiecewisePolynomial, Piece, EvalFunctionPPA
 
 RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
@@ -53,14 +54,19 @@ def test_eval_piecewise_polynomial():
 @pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
 def test_eval_sin():
     qpu = QPU(filters=BIT_DEFAULT)
+    qpu.reset(500)
+    q_x = QFixed(20, name="x", radix=15, qpu=qpu)
+    rec = QPURecorder(qpu)
     func = EvalFunctionPPA(np.sin, interval=(-1, 1), degree=3, error_tol=1e-4)
+    func.compute(q_x)
+    q_result = func.get_result_qreg()
+    rec.record_computation()
 
     for x in [0.5, 0.8, 1.0]:
-        qpu.reset(500)
-        qx = QFixed(20, name="qx", radix=15, qpu=qpu)
-        qx.write(x)
-        func.compute(qx)
-        result = func.get_result_qreg().read()
+        rec.restore_initial_state()
+        q_x.write(x)
+        rec.apply_computation()
+        result = q_result.read()
         assert np.abs(result - np.sin(x)) < 1e-4
 
 
