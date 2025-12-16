@@ -1,11 +1,15 @@
+import os
+import pytest
 import numpy as np
 from psiqworkbench import QPU, QFixed, QUInt
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
-from qmath.func.inv_sqrt import _InitialGuess, _NewtonIteration
+from qmath.func.inv_sqrt import _InitialGuess, _NewtonIteration, InverseSquareRoot
 from qmath.utils.test_utils import QPURecorder
 from math import floor, log2
 import random
+
+RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
 
 
 def test_newton_iteration():
@@ -47,3 +51,20 @@ def test_initial_guess():
         result = q_ans.read()
         expected = 2 ** (-(int(floor(log2(a)))) // 2)
         assert result == expected
+
+
+# TODO: make this test faster.
+@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
+def test_inverse_square_root():
+    for a in [0.1, 0.3, 0.4, 1.0, 1.5, 2.0, 5.6]:
+        qpu = QPU(filters=BIT_DEFAULT)
+        qpu.reset(1000)
+        q_a = QFixed(30, name="a", radix=20, qpu=qpu)
+        q_a.write(a)
+        func = InverseSquareRoot(num_iterations=4)
+        func.compute(q_a)
+        q_result = func.get_result_qreg()
+        result = q_result.read()
+        expected = a**-0.5
+        print(a, result, expected, abs(result - expected))
+        assert np.abs(result - expected) < 1e-5
