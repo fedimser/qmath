@@ -12,6 +12,7 @@ import psiqworkbench.qubricks as qbk
 from psiqworkbench import QPU, QFixed, QUInt
 
 from qmath.add import CDKMAdder, TTKAdder
+from qmath.mult import Square
 
 BENCHMARKS_FILE_NAME = "qmath/benchmarks/benchmarks.csv"
 
@@ -60,12 +61,23 @@ def _benhmark_ttk_adder() -> BenchmarkResult:
     return BenchmarkResult(name="TTKAdder", qubits=metrics["qubit_highwater"] - 64, ops=metrics["total_num_ops"])
 
 
+def _benhmark_square() -> BenchmarkResult:
+    qpu = QPU(filters=[">>witness>>"])
+    qpu.reset(200)
+    qs_x = QFixed(32, name="x", radix=24, qpu=qpu)
+    qs_y = QFixed(32, name="y", radix=24, qpu=qpu)
+    Square().compute(qs_x, qs_y)
+    metrics = qpu.metrics()
+    return BenchmarkResult(name="Square", qubits=metrics["qubit_highwater"] - 64, ops=metrics["total_num_ops"])
+
+
 def _run_benchmarks() -> str:
     """Runs all benchmarks, returns results as CSV table."""
     results = [
         _benhmark_gidney_add(),
         _benhmark_cdkm_adder(),
         _benhmark_ttk_adder(),
+        _benhmark_square(),
     ]
     return "\n".join([BenchmarkResult.csv_header()] + [r.to_csv_row() for r in results])
 

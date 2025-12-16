@@ -2,3 +2,4 @@ Benchmark,Qubits,Ops
 GidneyAdd,31,215
 CDKMAdder,1,272
 TTKAdder,0,216
+Square,113,11708

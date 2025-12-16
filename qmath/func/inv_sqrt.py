@@ -2,7 +2,7 @@ import psiqworkbench.qubricks as qbk
 from psiqworkbench import QFixed, QInt, QUInt, Qubits
 from psiqworkbench.qubricks import Qubrick
 
-from ..mult.square import square
+from ..mult.square import Square
 
 
 # TODO: implement more efficiently and move to common.
@@ -68,7 +68,7 @@ class _NewtonIteration(Qubrick):
         t1 = QFixed(self.alloc_temp_qreg(x0.num_qubits, "t1"), radix=x0.radix)
         t2 = QFixed(self.alloc_temp_qreg(x0.num_qubits, "t2"), radix=x0.radix)
         t3 = QFixed(self.alloc_temp_qreg(x0.num_qubits, "t3"), radix=x0.radix)
-        square(x0, t1, self)  # t1 := x0^2.
+        Square().compute(x0, t1)  # t1 := x0^2.
         qbk.GidneyMultiplyAdd().compute(t2, a, t1)  # t2 := a*x0^2.
         t3.write(c)
         subtract(t3, t2)  # t3 := c - a*x0^2

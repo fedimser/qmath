@@ -19,7 +19,7 @@ from ..utils.gates import write_uint, parallel_cnot
 from ..utils.lookup import TableLookup
 from .horner import HornerScheme
 from .remez import remez_piecewise, PiecewisePolynomial
-from ..mult.square import square
+from ..mult.square import Square
 
 
 # Converts signed real number to unsigned integer whose binary representation is
@@ -193,7 +193,7 @@ class EvalFunctionPPA(Qubrick):
         epp = EvalPiecewisePolynomial(self.poly)
         if self.is_odd or self.is_even:
             x_sq = QFixed(self.alloc_temp_qreg(x.num_qubits, "x_sq"), radix=x.radix)
-            square(x, x_sq, self)
+            Square().compute(x, x_sq)
             epp.compute(x_sq)
             if self.is_even:
                 # Return poly(x^2).
