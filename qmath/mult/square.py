@@ -29,7 +29,19 @@ class SquareIteration(Qubrick):
 
 
 class Square(Qubrick):
-    """Computes square of given QFixed register."""
+    """Computes square of given QFixed register.
+
+    There are 2 versions:
+      * If fallback_to_mul=True (default), makes a copy of input and uses
+          GidneyMultiplyAdd.
+      * If fallback_to_mul=False, uses specialized squaring algorithm.
+          This option uses 2x less resources but requires ~1 extra qubit to achieve
+          the same precision as square via multiplication.
+    """
+
+    def __init__(self, *, fallback_to_mul: bool = True, **kwargs):
+        super().__init__(**kwargs)
+        self.fallback_to_mul = fallback_to_mul
 
     def _compute_unsigned(self, x: QUFixed, target: QUFixed):
         """Computes square assuming x is unsigned.
@@ -50,8 +62,8 @@ class Square(Qubrick):
                 qbk.GidneyAdd().compute(target[j:], anc[j:])
         anc.release()
 
-    def _compute(self, x: QFixed, target: QFixed, fallback_to_mul=True):
-        if fallback_to_mul:
+    def _compute(self, x: QFixed, target: QFixed):
+        if self.fallback_to_mul:
             x_reg = Qubits(x)
             x_copy_reg: Qubits = self.alloc_temp_qreg(x.num_qubits, "x_copy")
             x_copy = QFixed(x_copy_reg, radix=x.radix)

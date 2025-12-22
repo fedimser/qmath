@@ -2,6 +2,7 @@ Benchmark,Qubits,Ops,Toffoli,T
 GidneyAdd,95,215,31,0
 CDKMAdder,65,272,61,0
 TTKAdder,64,216,62,0
-Square,177,11708,3624,0
+Square,126,5129,1364,0
+Square(via mul),177,11708,3624,0
 Subtract,95,368,61,0
 InvSquareRoot(iter=3),372,44399,14033,0

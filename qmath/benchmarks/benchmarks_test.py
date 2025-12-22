@@ -66,13 +66,14 @@ def _benhmark_ttk_adder() -> BenchmarkResult:
     return BenchmarkResult(name="TTKAdder", metrics=qpu.metrics())
 
 
-def _benhmark_square() -> BenchmarkResult:
+def _benchmark_square(fallback_to_mul: bool) -> BenchmarkResult:
     qpu = QPU(filters=[">>witness>>"])
     qpu.reset(200)
     qs_x = QFixed(32, name="x", radix=24, qpu=qpu)
     qs_y = QFixed(32, name="y", radix=24, qpu=qpu)
-    Square().compute(qs_x, qs_y)
-    return BenchmarkResult(name="Square", metrics=qpu.metrics())
+    Square(fallback_to_mul=fallback_to_mul).compute(qs_x, qs_y)
+    name = "Square(via mul)" if fallback_to_mul else "Square"
+    return BenchmarkResult(name=name, metrics=qpu.metrics())
 
 
 def _benhmark_subtract() -> BenchmarkResult:
@@ -98,7 +99,8 @@ def _run_benchmarks() -> str:
         _benhmark_gidney_add(),
         _benhmark_cdkm_adder(),
         _benhmark_ttk_adder(),
-        _benhmark_square(),
+        _benchmark_square(False),
+        _benchmark_square(True),
         _benhmark_subtract(),
         _benchmark_inv_square_root(),
     ]
@@ -120,5 +122,5 @@ def test_benchmarks():
 # Use this for development when optimizing/debugging single benchmark.
 # python3 ./qmath/benchmarks/benchmarks_test.py
 if __name__ == "__main__":
-    result = _benhmark_square()
+    result = _benchmark_square()
     print(result.to_csv_row())
