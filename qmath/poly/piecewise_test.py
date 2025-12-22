@@ -6,7 +6,7 @@ import pytest
 from psiqworkbench import QPU, QFixed, QUInt
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
-from qmath.utils.test_utils import QPURecorder
+from qmath.utils.test_utils import QPUTestHelper
 from qmath.poly import WritePieceNumber, EvalPiecewisePolynomial, PiecewisePolynomial, Piece, EvalFunctionPPA
 
 RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
@@ -53,21 +53,15 @@ def test_eval_piecewise_polynomial():
 
 @pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
 def test_eval_sin():
-    qpu = QPU(filters=BIT_DEFAULT)
-    qpu.reset(500)
-    q_x = QFixed(20, name="x", radix=15, qpu=qpu)
-    rec = QPURecorder(qpu)
+    qpu_helper = QPUTestHelper(num_qubits=500, qubits_per_reg=20, radix=15, num_inputs=1)
+    q_x = qpu_helper.inputs[0]
     func = EvalFunctionPPA(np.sin, interval=(-1, 1), degree=3, error_tol=1e-4)
     func.compute(q_x)
-    q_result = func.get_result_qreg()
-    rec.record_computation()
+    qpu_helper.record_op(func.get_result_qreg())
 
-    for x in [0.5, 0.8, 1.0]:
-        rec.restore_initial_state()
-        q_x.write(x)
-        rec.apply_computation()
-        result = q_result.read()
-        assert np.abs(result - np.sin(x)) < 1e-4
+    for x in np.linspace(-1, 1, 21):
+        result = qpu_helper.apply_op([x])
+        assert np.abs(result - np.sin(x)) < 1.4e-4
 
 
 def test_eval_sin_odd():

@@ -2,10 +2,9 @@ import os
 import pytest
 import numpy as np
 from psiqworkbench import QPU, QFixed, QUInt
-from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.func.inv_sqrt import _InitialGuess, _NewtonIteration, InverseSquareRoot
-from qmath.utils.test_utils import QPURecorder, QPUTestHelper
+from qmath.utils.test_utils import QPUTestHelper
 from math import floor, log2
 import random
 
