@@ -4,6 +4,7 @@ from psiqworkbench import Qubits, QUInt
 from psiqworkbench.interfaces import Adder
 from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
+from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from ..utils.padding import padded
 
@@ -55,8 +56,8 @@ class TTKAdder(Qubrick):
     """
 
     def _compute(self, lhs: QUInt, rhs: QUInt, ctrl: Optional[Qubits] = None):
-        rhs_len = len(rhs)
-        lhs_len = len(lhs)
+        rhs_len = rhs.num_qubits
+        lhs_len = lhs.num_qubits
         assert lhs_len >= rhs_len, "Register `rhs` cannot be longer than register `lhs`."
         assert rhs_len >= 1, "Registers `rhs` and `lhs` must contain at least one qubit."
 
@@ -79,3 +80,15 @@ class TTKAdder(Qubrick):
             with padded(self, (rhs,), (len(lhs) - 1,)) as (rhs,):
                 assert len(rhs) == len(lhs) - 1
                 self._compute(lhs, rhs)
+
+    def _estimate(self, lhs: QUInt, rhs: QUInt, ctrl: Optional[Qubits] = None):
+        assert ctrl is None, "RE not implemented for controlled version."
+        assert lhs.num_qubits == rhs.num_qubits, "RE implemented only for inputs of equal size."
+        n = lhs.num_qubits
+        # Note: this RE is correct only for n>=2.
+
+        cost = QubrickCosts(
+            toffs=2 * n - 2,
+            active_volume=114 * n - 118,
+        )
+        self.get_qc().add_cost_event(cost)

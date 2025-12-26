@@ -4,6 +4,7 @@ from psiqworkbench import Qubits, QUInt
 from psiqworkbench.interfaces import Adder
 from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
+from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from ..utils.padding import padded
 
@@ -126,3 +127,17 @@ class CDKMAdder(Qubrick):
             with padded(self, (rhs,), (len(lhs) - 1,)) as (rhs,):
                 assert len(rhs) == len(lhs) - 1
                 self._compute(lhs, rhs)
+
+    def _estimate(self, lhs: QUInt, rhs: QUInt, ctrl: Optional[Qubits] = None):
+        assert self.optimized, "RE implemented only for optimized version."
+        assert ctrl is None, "RE not implemented for controlled version."
+        assert lhs.num_qubits == rhs.num_qubits, "RE implemented only for inputs of equal size."
+        n = lhs.num_qubits
+        # Note: this RE is correct only for n>=5.
+
+        cost = QubrickCosts(
+            toffs=2 * n - 3,
+            active_volume=114 * n - 169,
+            local_ancillae=1,
+        )
+        self.get_qc().add_cost_event(cost)
