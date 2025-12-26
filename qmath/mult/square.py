@@ -37,6 +37,8 @@ class Square(Qubrick):
       * If fallback_to_mul=False, uses specialized squaring algorithm.
           This option uses 2x less resources but requires ~1 extra qubit to achieve
           the same precision as square via multiplication.
+          This is because it doesn't add padding qubits so result.radix=x.radix*2,
+          like the multiplication does.
     """
 
     def __init__(self, *, fallback_to_mul: bool = True, **kwargs):

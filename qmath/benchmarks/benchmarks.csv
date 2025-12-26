@@ -6,3 +6,4 @@ Square,126,5129,1043,0
 Square(via mul),177,11708,3624,0
 Subtract,95,368,61,0
 InvSquareRoot(iter=3),372,44399,14033,0
+IncBy1,62,632,0,120

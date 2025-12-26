@@ -11,7 +11,7 @@ from dataclasses import dataclass
 import psiqworkbench.qubricks as qbk
 from psiqworkbench import QPU, QFixed, QUInt
 
-from qmath.add import CDKMAdder, TTKAdder, Subtract
+from qmath.add import CDKMAdder, TTKAdder, Subtract, Increment
 from qmath.mult import Square
 from qmath.func import InverseSquareRoot
 
@@ -98,6 +98,14 @@ def _benchmark_inv_square_root() -> BenchmarkResult:
     return BenchmarkResult(name="InvSquareRoot(iter=3)", metrics=qpu.metrics())
 
 
+def _benhmark_increment() -> BenchmarkResult:
+    qpu = QPU(filters=[">>toffoli-filter>>", ">>witness>>"])
+    qpu.reset(64)
+    qs_x = QUInt(32, name="x", qpu=qpu)
+    Increment().compute(qs_x, 1)
+    return BenchmarkResult(name="IncBy1", metrics=qpu.metrics())
+
+
 def _run_benchmarks() -> str:
     """Runs all benchmarks, returns results as CSV table."""
     results = [
@@ -108,6 +116,7 @@ def _run_benchmarks() -> str:
         _benchmark_square(True),
         _benhmark_subtract(),
         _benchmark_inv_square_root(),
+        _benhmark_increment(),
     ]
     return "\n".join([BenchmarkResult.csv_header()] + [r.to_csv_row() for r in results])
 
@@ -127,5 +136,5 @@ def test_benchmarks():
 # Use this for development when optimizing/debugging single benchmark.
 # python3 ./qmath/benchmarks/benchmarks_test.py
 if __name__ == "__main__":
-    result = _benchmark_square()
+    result = _benhmark_increment()
     print(result.to_csv_row())
