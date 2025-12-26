@@ -9,7 +9,7 @@ class Subtract(Qubrick):
     def _negate(self, x: QFixed):
         x_as_int = QInt(x)
         x_as_int.x()
-        Increment().compute(x_as_int, 1)
+        qbk.GidneyAdd().compute(x_as_int, 1)
 
     def _compute(self, lhs: QFixed, rhs: QFixed):
         """Computes lhs-= rhs. Negates rhs in the process."""
