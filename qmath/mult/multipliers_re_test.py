@@ -39,3 +39,11 @@ def test_re_jhha():
     re_numeric = lambda assgn: re_numeric_multiplier(op, assgn)
     for n in [1, 5, 10, 20]:
         verify_re(re_symbolic, re_numeric, {"n": n})
+
+
+def test_re_mct():
+    op = MCTMultipler()
+    re_symbolic = re_symbolic_multiplier(op)
+    re_numeric = lambda assgn: re_numeric_multiplier(op, assgn)
+    for n in [1, 5, 10, 20]:
+        verify_re(re_symbolic, re_numeric, {"n": n}, no_fail=True)

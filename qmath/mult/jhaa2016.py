@@ -52,7 +52,7 @@ class JHHAMultipler(Qubrick):
 
         z_cin.release()
 
-    def _estimate(self, a: QUInt, b: QUInt, result=QUInt) -> None:
+    def _estimate(self, a: QUInt, b: QUInt, result: QUInt) -> None:
         n = a.num_qubits
         assert b.num_qubits == n
         assert result.num_qubits == 2 * n
