@@ -82,13 +82,18 @@ class TTKAdder(Qubrick):
                 self._compute(lhs, rhs)
 
     def _estimate(self, lhs: QUInt, rhs: QUInt, ctrl: Optional[Qubits] = None):
-        assert ctrl is None, "RE not implemented for controlled version."
         assert lhs.num_qubits == rhs.num_qubits, "RE implemented only for inputs of equal size."
         n = lhs.num_qubits
         # Note: this RE is correct only for n>=2.
 
-        cost = QubrickCosts(
-            toffs=2 * n - 2,
-            active_volume=114 * n - 118,
-        )
+        if ctrl is None:
+            cost = QubrickCosts(
+                toffs=2 * n - 2,
+                active_volume=114 * n - 118,
+            )
+        else:
+            cost = QubrickCosts(
+                toffs=7 * n - 8,
+                active_volume=329 * n - 376,
+            )
         self.get_qc().add_cost_event(cost)

@@ -2,8 +2,9 @@ import psiqworkbench.qubricks as qbk
 from psiqworkbench import Qubits, QUInt
 from psiqworkbench.interfaces import Adder
 from psiqworkbench.qubricks import Qubrick
+from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
-from ..utils.gates import cnot, ccnot
+from ..utils.gates import cnot
 from ..utils.padding import padded
 
 
@@ -111,3 +112,12 @@ class TMVHDivider(Qubrick):
             with padded(self, (a, b, c), (n, n - 1, n)) as (a, b, c):
                 self._divide_non_restoring(a, b | c[0], c[1:])
                 a[n - 1].swap(c[0])
+
+    def _estimate(self, a: QUInt, b: QUInt, c: QUInt):
+        na = a.num_qubits
+        nb = b.num_qubits
+        assert c.num_qubits == na
+
+        # TODO: implement.
+        cost = QubrickCosts()
+        self.get_qc().add_cost_event(cost)

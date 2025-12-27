@@ -1,7 +1,7 @@
 from psiqworkbench import QPU, SymbolicQPU, QUInt, SymbolicQubits, resource_estimator, Qubrick
 
 from psiqworkbench.symbolics import Parameter
-from psiqworkbench import SymbolicQPU, SymbolicQubits
+from psiqworkbench import SymbolicQPU, SymbolicQubits, Qubits
 from psiqworkbench.utils.unstable_api_utils import ignore_unstable_warnings
 from psiqworkbench.resource_estimation.qre._resource_dict import ResourceDict
 from typing import Callable
@@ -11,26 +11,32 @@ import numpy as np
 ignore_unstable_warnings()
 
 
-def re_numeric_int_binary_op(op: Qubrick, assgn: dict[str, int]) -> ResourceDict:
+def re_numeric_int_binary_op(op: Qubrick, assgn: dict[str, int], controlled=False) -> ResourceDict:
     """Numeric resource estimation for binary op on QUInts."""
     n = assgn["n"]
     qc = QPU(filters=[">>witness>>"])
     qc.reset(3 * n)
     qs_x = QUInt(n, "x", qc)
     qs_y = QUInt(n, "y", qc)
-    op.compute(qs_x, qs_y)
+    ctrl = None
+    if controlled:
+        ctrl = Qubits(1, "ctrl", qc)
+    op.compute(qs_x, qs_y, ctrl=ctrl)
 
     re = resource_estimator(qc)
     return re.resources()
 
 
-def re_symbolic_int_binary_op(op: Qubrick) -> ResourceDict:
+def re_symbolic_int_binary_op(op: Qubrick, controlled=False) -> ResourceDict:
     """Symbolic resource estimation for binary op on QUInts."""
     n = Parameter("n", "Register size")
     qc = SymbolicQPU()
     qs_x = SymbolicQubits(n, "x", qc)
     qs_y = SymbolicQubits(n, "y", qc)
-    op.compute(qs_x, qs_y)
+    ctrl = None
+    if controlled:
+        ctrl = SymbolicQubits(1, "ctrl", qc)
+    op.compute(qs_x, qs_y, ctrl=ctrl)
 
     re = resource_estimator(qc)
     return re.resources()

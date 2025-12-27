@@ -130,14 +130,22 @@ class CDKMAdder(Qubrick):
 
     def _estimate(self, lhs: QUInt, rhs: QUInt, ctrl: Optional[Qubits] = None):
         assert self.optimized, "RE implemented only for optimized version."
-        assert ctrl is None, "RE not implemented for controlled version."
         assert lhs.num_qubits == rhs.num_qubits, "RE implemented only for inputs of equal size."
         n = lhs.num_qubits
         # Note: this RE is correct only for n>=5.
 
-        cost = QubrickCosts(
-            toffs=2 * n - 3,
-            active_volume=114 * n - 169,
-            local_ancillae=1,
-        )
+        if ctrl is None:
+            cost = QubrickCosts(
+                toffs=2 * n - 3,
+                active_volume=114 * n - 169,
+                local_ancillae=1,
+            )
+        else:
+            cost = QubrickCosts(
+                gidney_lelbows=2 * n - 3,
+                gidney_relbows=2 * n - 3,
+                toffs=5 * n - 6,
+                active_volume=341 * n - 445,
+                local_ancillae=1,
+            )
         self.get_qc().add_cost_event(cost)
