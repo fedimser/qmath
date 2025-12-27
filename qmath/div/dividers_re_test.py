@@ -4,7 +4,7 @@ from psiqworkbench.resource_estimation.qre._resource_dict import ResourceDict
 from psiqworkbench.symbolics import Parameter
 
 from qmath.div import TMVHDivider
-from qmath.utils.re_utils import verify_re
+from qmath.utils.re_utils import verify_re, FILTERS_FOR_NUMERIC_RE
 
 
 def re_symbolic_divider(op: TMVHDivider) -> ResourceDict:
@@ -25,7 +25,7 @@ def re_symbolic_divider(op: TMVHDivider) -> ResourceDict:
 def re_numeric_divider(op: TMVHDivider, assgn: dict[str, int]) -> ResourceDict:
     """Numeric resource estimation for multiplier."""
     na, nb = assgn["na"], assgn["nb"]
-    qc = QPU(filters=[">>witness>>"])
+    qc = QPU(filters=FILTERS_FOR_NUMERIC_RE)
     qc.reset(4 * na + 5)
     qs_a = QUInt(na, "a", qc)
     qs_b = QUInt(nb, "b", qc)

@@ -3,7 +3,7 @@ from psiqworkbench.resource_estimation.qre._resource_dict import ResourceDict
 from psiqworkbench.symbolics import Parameter
 
 from qmath.mult import JHHAMultipler, MCTMultipler, Multiplier
-from qmath.utils.re_utils import verify_re
+from qmath.utils.re_utils import verify_re, FILTERS_FOR_NUMERIC_RE
 
 
 def re_symbolic_multiplier(op: Multiplier) -> ResourceDict:
@@ -22,7 +22,7 @@ def re_symbolic_multiplier(op: Multiplier) -> ResourceDict:
 def re_numeric_multiplier(op: Multiplier, assgn: dict[str, int]) -> ResourceDict:
     """Numeric resource estimation for multiplier."""
     n = assgn["n"]
-    qc = QPU(filters=[">>witness>>"])
+    qc = QPU(filters=FILTERS_FOR_NUMERIC_RE)
     qc.reset(4 * n + 1)
     qs_x = QUInt(n, "x", qc)
     qs_y = QUInt(n, "y", qc)

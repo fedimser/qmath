@@ -146,6 +146,6 @@ class CDKMAdder(Qubrick):
                 gidney_relbows=2 * n - 3,
                 toffs=5 * n - 6,
                 active_volume=341 * n - 445,
-                local_ancillae=1,
+                local_ancillae=2,
             )
         self.get_qc().add_cost_event(cost)

@@ -10,11 +10,13 @@ import numpy as np
 
 ignore_unstable_warnings()
 
+FILTERS_FOR_NUMERIC_RE = [">>clean-ladder-filter>>", ">>single-control-filter>>", ">>witness>>"]
+
 
 def re_numeric_int_binary_op(op: Qubrick, assgn: dict[str, int], controlled=False) -> ResourceDict:
     """Numeric resource estimation for binary op on QUInts."""
     n = assgn["n"]
-    qc = QPU(filters=[">>witness>>"])
+    qc = QPU(filters=FILTERS_FOR_NUMERIC_RE)
     qc.reset(3 * n)
     qs_x = QUInt(n, "x", qc)
     qs_y = QUInt(n, "y", qc)
