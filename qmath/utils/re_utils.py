@@ -24,7 +24,7 @@ def re_numeric_int_binary_op(op: Qubrick, assgn: dict[str, int]) -> ResourceDict
     return re.resources()
 
 
-def re_symbolic_int_binary_op(op: Qubrick):
+def re_symbolic_int_binary_op(op: Qubrick) -> ResourceDict:
     """Symbolic resource estimation for binary op on QUInts."""
     n = Parameter("n", "Register size")
     qc = SymbolicQPU()

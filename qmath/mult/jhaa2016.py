@@ -1,6 +1,7 @@
 from psiqworkbench import Qubits, QUInt
 from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
+from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from ..utils.gates import ccnot
 from ..utils.rotate import rotate_right
@@ -38,9 +39,9 @@ class JHHAMultipler(Qubrick):
     """
 
     def _compute(self, a: QUInt, b: QUInt, result: QUInt) -> None:
-        n = len(a)
-        assert len(b) == n, "Register sizes must match."
-        assert len(result) == 2 * n, "Register sizes must match."
+        n = a.num_qubits
+        assert b.num_qubits == n, "Register sizes must match."
+        assert result.num_qubits == 2 * n, "Register sizes must match."
         z_cin: Qubits = self.alloc_temp_qreg(1, "anc")
         b1 = z_cin | b
 
@@ -50,3 +51,15 @@ class JHHAMultipler(Qubrick):
         _add_nop(result[n - 1 : 2 * n], b1, a[n - 1])
 
         z_cin.release()
+
+    def _estimate(self, a: QUInt, b: QUInt, result=QUInt) -> None:
+        n = a.num_qubits
+        assert b.num_qubits == n
+        assert result.num_qubits == 2 * n
+
+        cost = QubrickCosts(
+            toffs=4 * n**2 + n,
+            active_volume=204 * n**2 + 47 * n,
+            local_ancillae=1,
+        )
+        self.get_qc().add_cost_event(cost)
