@@ -52,7 +52,7 @@ class AbsInPlace(Qubrick):
 
 
 class Add(Qubrick):
-    """Computes lhs+= rhs."""
+    """Computes lhs += rhs."""
 
     def _compute(self, lhs: QFixed, rhs: QFixed):
         qbk.GidneyAdd().compute(lhs, rhs)
@@ -70,6 +70,17 @@ class Add(Qubrick):
         self.get_qc().add_cost_event(cost)
 
 
+class AddConst(Qubrick):
+    """Computes lhs += rhs (lhs is aclassical number)."""
+
+    def _compute(self, lhs: QFixed, rhs: float):
+        # if abs(rhs) > 2 ** (-lhs.radix - 1):
+        qbk.GidneyAdd().compute(lhs, rhs)
+
+    def _estimate(self, lhs: SymbolicQFixed, rhs: float):
+        qbk.GidneyAdd().compute(lhs, rhs)
+
+
 class Subtract(Qubrick):
     """Computes lhs-= rhs. Negates rhs in the process."""
 
@@ -79,7 +90,7 @@ class Subtract(Qubrick):
 
 
 class MultiplyAdd(Qubrick):
-    """Computes dst += (lhs * rhs)."""
+    """Computes dst += lhs * rhs."""
 
     def _compute(self, dst: QFixed, lhs: QFixed, rhs: QFixed):
         qbk.GidneyMultiplyAdd().compute(dst, lhs, rhs)
@@ -100,3 +111,14 @@ class MultiplyAdd(Qubrick):
             active_volume=-1170 + 821 * n - 23 * r + 59 * n**2 + 118 * n * r + 54 * r**2,
         )
         self.get_qc().add_cost_event(cost)
+
+
+# TODO: implement.
+class MultiplyConstAdd(Qubrick):
+    """Computes dst += lhs * rhs (rhs is aclassical number)."""
+
+    def _compute(self, dst: QFixed, lhs: QFixed, rhs: float):
+        pass
+
+    def _estimate(self, dst: SymbolicQFixed, lhs: SymbolicQFixed, rhs: float):
+        pass

@@ -16,7 +16,7 @@ def test_re_initial_guess():
 
 
 @pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
-def test_newton_iteration():
+def test_re_newton_iteration():
     op = _NewtonIteration()
     re_symbolic = re_symbolic_fixed_point(op, n_inputs=3)
     re_numeric = lambda assgn: re_numeric_fixed_point(op, assgn, n_inputs=3)

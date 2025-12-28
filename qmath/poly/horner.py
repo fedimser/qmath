@@ -1,7 +1,8 @@
 from psiqworkbench import QFixed
 from psiqworkbench.qubricks import Qubrick
 
-import psiqworkbench.qubricks as qbk
+from ..func.common import AddConst, MultiplyAdd
+from ..utils.symbolic import alloc_temp_qreg_like
 
 
 class HornerScheme(Qubrick):
@@ -17,14 +18,13 @@ class HornerScheme(Qubrick):
     def _compute(self, x: QFixed):
         # Computes ax + b.
         def linear(a: QFixed, b: float) -> QFixed:
-            result = QFixed(self.alloc_temp_qreg(x.num_qubits, "a"), radix=x.radix)
-            qbk.GidneyMultiplyAdd().compute(result, a, x)
-            if abs(b) > 2 ** (-x.radix - 1):
-                qbk.GidneyAdd().compute(result, b)
+            _, result = alloc_temp_qreg_like(self, x, name="result")
+            MultiplyAdd().compute(result, a, x)
+            AddConst().compute(result, b)
             return result
 
         # TODO: skip allocating first register by doing with quantum-classical multiplication on first step.
-        a = QFixed(self.alloc_temp_qreg(x.num_qubits, "a"), radix=x.radix)
+        _, a = alloc_temp_qreg_like(self, x, name="a")
         a.write(self.coefs[-1])
         for b in self.coefs[:-1][::-1]:
             a = linear(a, b)
