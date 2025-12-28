@@ -1,7 +1,7 @@
 """Common functions on QFixed numbers, used as building blocks in other routines."""
 
 import psiqworkbench.qubricks as qbk
-from psiqworkbench import QFixed, Qubrick, QInt
+from psiqworkbench import QFixed, Qubrick, QInt, QUInt
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from ..utils.symbolic import SymbolicQFixed
@@ -22,6 +22,30 @@ class Negate(Qubrick):
             gidney_relbows=n - 2,
             local_ancillae=n - 2,
             active_volume=61 * n - 118,
+        )
+        self.get_qc().add_cost_event(cost)
+
+
+class AbsInPlace(Qubrick):
+    """Computes x := abs(x)."""
+
+    def _compute(self, x: QFixed):
+        sign = self.alloc_temp_qreg(1, "sign")
+        sign.lelbow(x[-1])
+        # Using loop instead of x.x(sign) to get exact symbolic RE.
+        # TODO: understand why x.x(sign) has non-linear numeric RE.
+        for i in range(x.num_qubits):
+            x[i].x(sign)
+        qbk.GidneyAdd().compute(QUInt(x), 1, ctrl=sign)
+
+    def _estimate(self, x: SymbolicQFixed):
+        n = x.num_qubits
+        cost = QubrickCosts(
+            gidney_lelbows=n - 2,
+            gidney_relbows=n - 2,
+            toffs=n - 1,
+            local_ancillae=n - 1,
+            active_volume=108 * n - 154,
         )
         self.get_qc().add_cost_event(cost)
 

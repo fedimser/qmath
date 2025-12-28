@@ -5,20 +5,9 @@ from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.qubits.base_qubits import BaseQubits
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
-from ..func.common import MultiplyAdd
+from ..func.common import AbsInPlace, MultiplyAdd
 from ..utils.symbolic import alloc_temp_qreg_like
 from ..utils.gates import ParallelCnot
-
-
-# TODO: move to common.
-class AbsInPlace(Qubrick):
-    """Computes x := abs(x)."""
-
-    def _compute(self, x: QFixed):
-        sign = self.alloc_temp_qreg(1, "sign")
-        sign.lelbow(x[-1])
-        x.x(sign)
-        qbk.GidneyAdd().compute(QUInt(x), 1, sign)
 
 
 class SquareIteration(Qubrick):
@@ -33,7 +22,6 @@ class SquareIteration(Qubrick):
             anc[anc_pos].lelbow(x[i] | x[i + i2])
 
 
-# TODO: move to funcs.
 class Square(Qubrick):
     """Computes square of given QFixed register.
 
