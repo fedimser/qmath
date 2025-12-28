@@ -1,4 +1,8 @@
-"""Common functions on QFixed numbers, used as building blocks in other routines."""
+"""Common functions on QFixed numbers, used as building blocks in other routines.
+
+Some of these are wrappers around routines from psiqworkbench.qubricks, this is
+done so we can define symbolic resource estimates for them.
+"""
 
 import psiqworkbench.qubricks as qbk
 from psiqworkbench import QFixed, Qubrick, QInt, QUInt
@@ -50,14 +54,31 @@ class AbsInPlace(Qubrick):
         self.get_qc().add_cost_event(cost)
 
 
+class Add(Qubrick):
+    """Computes lhs+= rhs."""
+
+    def _compute(self, lhs: QFixed, rhs: QFixed):
+        qbk.GidneyAdd().compute(lhs, rhs)
+
+    def _estimate(self, lhs: SymbolicQFixed, rhs: SymbolicQFixed):
+        # qbk.GidneyAdd has _estimate, but active volume there differs from
+        # what we observe from numeric RE. So we have to re-define _estimate.
+        n = lhs.num_qubits
+        cost = QubrickCosts(
+            gidney_lelbows=n - 1,
+            gidney_relbows=n - 1,
+            local_ancillae=n - 1,
+            active_volume=72 * n - 83,
+        )
+        self.get_qc().add_cost_event(cost)
+
+
 class Subtract(Qubrick):
     """Computes lhs-= rhs. Negates rhs in the process."""
 
     def _compute(self, lhs: QFixed, rhs: QFixed):
-        assert lhs.num_qubits == lhs.num_qubits
-        assert lhs.radix == rhs.radix
         Negate().compute(rhs)
-        qbk.GidneyAdd().compute(lhs, rhs)
+        Add().compute(lhs, rhs)
 
 
 class MultiplyAdd(Qubrick):
