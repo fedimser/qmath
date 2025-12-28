@@ -16,9 +16,13 @@ class Negate(Qubrick):
         qbk.GidneyAdd().compute(x_as_int, 1)
 
     def _estimate(self, x: SymbolicQFixed):
-        # TODO: implement correctly.
         n = x.num_qubits
-        cost = QubrickCosts(active_volume=n)
+        cost = QubrickCosts(
+            gidney_lelbows=n - 2,
+            gidney_relbows=n - 2,
+            local_ancillae=n - 2,
+            active_volume=61 * n - 118,
+        )
         self.get_qc().add_cost_event(cost)
 
 
