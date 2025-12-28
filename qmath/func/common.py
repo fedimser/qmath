@@ -91,10 +91,17 @@ class MultiplyAdd(Qubrick):
         n = dst.num_qubits
         assert lhs.num_qubits == n
         assert rhs.num_qubits == n
-        # TODO: implement.
+        r = dst.radix
+        assert lhs.radix == r
+        assert rhs.radix == r
+
+        # This RE is correct when n>=4, 0<r<n.
+        # It is within 0.1% of numerical RE for active volume and exact for other metrics.
         cost = QubrickCosts(
-            local_ancillae=0,
-            active_volume=0,
-            gidney_lelbows=0,
+            gidney_lelbows=0.5 * ((n + r) ** 2 + 15 * n - r - 32),
+            gidney_relbows=0.5 * ((n + r) ** 2 + 15 * n - r - 32),
+            toffs=0.5 * ((n + r) ** 2 + 17 * n + r - 16),
+            local_ancillae=n + 2 * r + 1,
+            active_volume=-1170 + 821 * n - 23 * r + 59 * n**2 + 118 * n * r + 54 * r**2,
         )
         self.get_qc().add_cost_event(cost)
