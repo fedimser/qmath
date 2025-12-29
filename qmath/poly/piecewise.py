@@ -121,7 +121,7 @@ class EvalPiecewisePolynomial(Qubrick):
 
         # Allocate register for the answer and write highest coefficient there.
         _, ans = alloc_temp_qreg_like(self, x, name="ans")
-        TableLookup().compute(l, ans, a[:, self.deg])
+        TableLookup(a[:, self.deg]).compute(l, ans)
 
         # Allocate register to write coefficients.
         q_coefs_raw, q_coefs = alloc_temp_qreg_like(self, x, name="coefs")
@@ -130,7 +130,7 @@ class EvalPiecewisePolynomial(Qubrick):
         for i in range(self.deg - 1, -1, -1):
             # Write coefficients to register qa.
             coefs = a[:, i] ^ (0 if i == self.deg - 1 else a[:, i + 1])
-            TableLookup().compute(l, q_coefs_raw, coefs)
+            TableLookup(coefs).compute(l, q_coefs_raw)
 
             # Compute ans := ans * x + coef.
             _, next_ans = alloc_temp_qreg_like(self, x, name=f"ans{i}")
