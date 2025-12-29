@@ -1,10 +1,11 @@
 import psiqworkbench.qubricks as qbk
-from psiqworkbench import QFixed, QUFixed, Qubits
+from psiqworkbench import QFixed, Qubits, QUFixed
 from psiqworkbench.qubricks import Qubrick
+from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from ..func.common import AbsInPlace, MultiplyAdd
-from ..utils.symbolic import alloc_temp_qreg_like
 from ..utils.gates import ParallelCnot
+from ..utils.symbolic import SymbolicQFixed, alloc_temp_qreg_like
 
 
 class Square(Qubrick):
@@ -64,3 +65,19 @@ class SquareOptimized(Qubrick):
             x_unsigned = QUFixed(x[0 : x.num_qubits - 1], radix=x.radix)
             target_unsigned = QUFixed(target[0 : target.num_qubits - 1], radix=target.radix)
             self._compute_unsigned(x_unsigned, target_unsigned)
+
+    def _estimate(self, x: SymbolicQFixed, target: SymbolicQFixed):
+        n = x.num_qubits
+        r = x.radix
+        assert target.num_qubits == n
+        assert target.radix == r
+
+        num_elbows = -3 + 0.5 * n - r + 0.5 * n**2 + n * r - 0.5 * r**2
+        cost = QubrickCosts(
+            gidney_lelbows=num_elbows,
+            gidney_relbows=num_elbows,
+            toffs=2 * n - 2,
+            local_ancillae=2 * n - 2,
+            active_volume=-248.5 + 120.4 * n - 76.5 * r + 30.3 * n**2 + 60.5 * n * r - 24.5 * r**2,
+        )
+        self.get_qc().add_cost_event(cost)
