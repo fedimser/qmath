@@ -1,7 +1,8 @@
 from typing import Optional
 
-from psiqworkbench import QFixed, Qubits, QUInt
+from psiqworkbench import QFixed, Qubits, QUInt, SymbolicQubits
 from psiqworkbench.qubricks import Qubrick
+from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from .gates import write_uint
 
@@ -43,3 +44,12 @@ class TableLookup(Qubrick):
         self._lookup_ctrl(address[m - 1], address_rec, target, table[0 : 2 ** (m - 1)])
         address[m - 1].x()
         self._lookup_ctrl(address[m - 1], address_rec, target, table[2 ** (m - 1) :])
+
+    def _estimate(self, address: SymbolicQubits, target: SymbolicQubits, table: list[int]):
+        # TODO: use correct numbers.
+        n = target.num_qubits
+        cost = QubrickCosts(
+            active_volume=n,
+            gidney_lelbows=n,
+        )
+        self.get_qc().add_cost_event(cost)

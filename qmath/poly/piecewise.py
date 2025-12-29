@@ -9,10 +9,10 @@ Reference:
 import math
 from typing import Callable
 
-
+from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 import numpy as np
 import psiqworkbench.qubricks as qbk
-from psiqworkbench import QFixed, QUInt, Qubits
+from psiqworkbench import QFixed, QUInt, Qubits, QInt
 from psiqworkbench.qubricks import Qubrick
 
 from ..utils.gates import write_uint
@@ -20,6 +20,8 @@ from ..utils.lookup import TableLookup
 from .horner import HornerScheme
 from .remez import remez_piecewise, PiecewisePolynomial
 from ..func.square import Square
+from ..func.common import MultiplyAdd, Add
+from ..utils.symbolic import alloc_temp_qreg_like
 
 
 # Converts signed real number to unsigned integer whose binary representation is
@@ -56,6 +58,17 @@ class WritePieceNumber(Qubrick):
             write_uint(target, (i + 1) ^ i, ctrl=result)
             comparator.uncompute()
 
+    def _estimate(self, x: QFixed, target: QUInt, points: list[int]):
+        # TODO: use correct numbers.
+        n = x.num_qubits
+        cost = QubrickCosts(
+            active_volume=n,
+            gidney_lelbows=n,
+            gidney_relbows=n,
+            toffs=n,
+        )
+        self.get_qc().add_cost_event(cost)
+
 
 class EvalPiecewisePolynomial(Qubrick):
     """Evaluates function using Piecewise Polynomial Approximation.
@@ -84,7 +97,7 @@ class EvalPiecewisePolynomial(Qubrick):
         # All x to the left of piece 0 will fall into piece 0.
         # All x to the right of the last piece will fall into the last piece.
         label_size = int(math.ceil(math.log2(self.num_pieces)))
-        l = QUInt(self.alloc_temp_qreg(label_size, "l"))
+        l = self.alloc_temp_qreg(label_size, "l")
         points = [self.poly.pieces[i].b for i in range(self.num_pieces - 1)]
         WritePieceNumber().compute(x, l, points)
         return l
@@ -99,31 +112,30 @@ class EvalPiecewisePolynomial(Qubrick):
         l = self._label(x)
 
         # Prepare coefficients.
-        assert x.num_qubits <= 64  # So we can use np.int128 to represent coefficients.
         a = np.zeros((self.num_pieces, self.deg + 1), dtype=np.int64)
-        for i, piece in enumerate(self.poly.pieces):
-            for j, coef in enumerate(piece.coefs):
-                a[i][j] = real_as_uint(coef, x)
+        if not self.qc.is_symbolic:
+            assert x.num_qubits <= 64  # So we can use np.int128 to represent coefficients.
+            for i, piece in enumerate(self.poly.pieces):
+                for j, coef in enumerate(piece.coefs):
+                    a[i][j] = real_as_uint(coef, x)
 
         # Allocate register for the answer and write highest coefficient there.
-        ans = QFixed(self.alloc_temp_qreg(x.num_qubits, "ans"), radix=x.radix)
-        TableLookup().compute(l, QUInt(ans), a[:, self.deg])
+        _, ans = alloc_temp_qreg_like(self, x, name="ans")
+        TableLookup().compute(l, ans, a[:, self.deg])
 
         # Allocate register to write coefficients.
-        q_coefs = QFixed(self.alloc_temp_qreg(x.num_qubits, "coefs"), radix=x.radix)
-        q_coefs_as_uint = QUInt(q_coefs)
+        q_coefs_raw, q_coefs = alloc_temp_qreg_like(self, x, name="coefs")
 
         # Parallel Horner scheme.
         for i in range(self.deg - 1, -1, -1):
             # Write coefficients to register qa.
             coefs = a[:, i] ^ (0 if i == self.deg - 1 else a[:, i + 1])
-            TableLookup().compute(l, q_coefs_as_uint, coefs)
+            TableLookup().compute(l, q_coefs_raw, coefs)
 
             # Compute ans := ans * x + coef.
-            next_ans = QFixed(self.alloc_temp_qreg(x.num_qubits, f"ans{i}"), radix=x.radix)
-            next_ans.write(0)  # todo:remove
-            qbk.GidneyMultiplyAdd().compute(next_ans, ans, x)
-            qbk.GidneyAdd().compute(next_ans, q_coefs)
+            _, next_ans = alloc_temp_qreg_like(self, x, name=f"ans{i}")
+            MultiplyAdd().compute(next_ans, ans, x)
+            Add().compute(next_ans, q_coefs)
             ans = next_ans
 
         self.set_result_qreg(ans)
@@ -192,7 +204,7 @@ class EvalFunctionPPA(Qubrick):
     def _compute(self, x: QFixed):
         epp = EvalPiecewisePolynomial(self.poly)
         if self.is_odd or self.is_even:
-            x_sq = QFixed(self.alloc_temp_qreg(x.num_qubits, "x_sq"), radix=x.radix)
+            _, x_sq = alloc_temp_qreg_like(self, x, "x_sq")
             Square().compute(x, x_sq)
             epp.compute(x_sq)
             if self.is_even:
