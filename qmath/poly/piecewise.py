@@ -201,8 +201,8 @@ class EvalFunctionPPA(Qubrick):
                 self.set_result_qreg(epp.get_result_qreg())
             else:
                 # Return ans := poly(x^2)*x.
-                ans = QFixed(self.alloc_temp_qreg(x.num_qubits, "ans"), radix=x.radix)
-                qbk.GidneyMultiplyAdd().compute(ans, epp.get_result_qreg(), x)
+                _, ans = alloc_temp_qreg_like(self, x, name="ans")
+                MultiplyAdd().compute(ans, epp.get_result_qreg(), x)
                 self.set_result_qreg(ans)
         else:
             epp.compute(x)

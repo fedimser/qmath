@@ -78,6 +78,8 @@ class AddConst(Qubrick):
     def __init__(self, rhs: float, **kwargs):
         super().__init__(**kwargs)
         self.rhs = rhs
+        if abs(self.rhs) < 1e-10:
+            self.rhs = 0.0
 
     def _compute(self, lhs: QFixed):
         assert abs(self.rhs) <= 2 ** (lhs.num_qubits - lhs.radix - 1), f"Constant {self.rhs} is too large."

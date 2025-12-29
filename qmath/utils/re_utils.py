@@ -57,6 +57,7 @@ METRICS = [
 ]
 
 
+# TODO: use psiqworkbench.test_helpers.compare_costs.
 def verify_re(
     re_symbolic: ResourceDict,
     re_numeric: Callable[[dict[str, int]], ResourceDict],
@@ -64,6 +65,7 @@ def verify_re(
     *,
     av_rtol: float = 0.0,
     av_atol: float = 0.0,
+    elbows_rtol: float = 0.0,
     no_fail=False,
 ):
     """
@@ -79,7 +81,11 @@ def verify_re(
     re1 = re_numeric(assgn)
     re2 = re_symbolic.evaluate(assgn)
     for metric in METRICS:
-        rtol = av_rtol if metric == "active_volume" else 0.0
+        rtol = 0.0
+        if metric == "active_volume":
+            rtol = av_rtol
+        elif metric.endswith("elbows"):
+            rtol = elbows_rtol
         atol = av_atol if metric == "active_volume" else 0.0
         if not np.isclose(re1[metric], re2[metric], rtol=rtol, atol=atol):
             error = " ".join(

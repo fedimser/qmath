@@ -16,6 +16,13 @@ class CompareConstGT(Qubrick):
         self.set_result_qreg(cmp.get_result_qreg())
 
     def _estimate(self, x: QFixed):
+        # This RE is not always correct because after _nudge_classical_compare,
+        # shifting by radix and taking integer part, there might be some
+        # trailing zeros. In which case we should subtract number of trailing
+        # zeros frin num_elbows. However, we can't write number of trailing
+        # zeros as a function of symbolic radix.
+        # If x is not finite binary fraction, ntz=O(1) and this discrepancy is
+        # small.
         num_elbows = x.num_qubits - 1
         ancs = self.alloc_temp_qreg(num_elbows, "ancs")
         self.set_result_qreg(ancs[num_elbows - 1])
