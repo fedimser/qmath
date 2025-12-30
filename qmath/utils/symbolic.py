@@ -1,10 +1,11 @@
-from psiqworkbench import QPU, QFixed, Qubits, Qubrick, QUInt, SymbolicQPU, SymbolicQubits, resource_estimator
+from psiqworkbench import QFixed, Qubits, Qubrick, SymbolicQubits
+from psiqworkbench.symbolics import Parameter
 
 
 class SymbolicQFixed(SymbolicQubits):
     """Symbolic register for fixed-precision signed number."""
 
-    def __init__(self, *, radix: int = 0, **kwargs):
+    def __init__(self, *, radix: Parameter | int = 0, **kwargs):
         super().__init__(**kwargs)
         self.radix = radix
 

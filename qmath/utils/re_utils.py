@@ -106,7 +106,7 @@ def verify_re(
 def re_symbolic_fixed_point(op: Qubrick, n_inputs: int = 1) -> ResourceDict:
     """Symbolic resource estimation for fixed-point operation."""
     n = Parameter("n", "Register size")
-    radix = Parameter("radix", "Radix")
+    radix = Parameter("radix", "Radix size")
 
     qpu = SymbolicQPU()
     inputs = [SymbolicQFixed(num_qubits=n, name=f"input_{i}", qpu=qpu, radix=radix) for i in range(n_inputs)]
