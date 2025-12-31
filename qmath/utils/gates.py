@@ -1,4 +1,4 @@
-from psiqworkbench import Qubits, QUInt, Qubrick
+from psiqworkbench import Qubits, QUInt, Qubrick, QFixed
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from typing import Optional
@@ -15,6 +15,14 @@ def ccnot(a: Qubits, b: Qubits, c: Qubits, ctrl: Optional[Qubits] = None):
 
 
 def write_uint(target: QUInt, number: int, ctrl: Optional[Qubits] = None):
+    """Writes target ⊕= number*ctrl."""
+    assert 0 <= number < 2**target.num_qubits
+    for i in range(target.num_qubits):
+        if (number >> i) % 2 == 1:
+            target[i].x(ctrl)
+
+
+def write_qfixed(target: QFixed, number: float, ctrl: Optional[Qubits] = None):
     """Writes target ⊕= number*ctrl."""
     assert 0 <= number < 2**target.num_qubits
     for i in range(target.num_qubits):

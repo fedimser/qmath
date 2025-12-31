@@ -5,7 +5,7 @@ done so we can define symbolic resource estimates for them.
 """
 
 import psiqworkbench.qubricks as qbk
-from psiqworkbench import QFixed, Qubrick, QInt, QUInt
+from psiqworkbench import QFixed, Qubrick, QInt, QUInt, Qubits
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 from psiqworkbench.symbolics import Min
 
@@ -16,10 +16,10 @@ from ..utils.re_utils import fraction_length
 class Negate(Qubrick):
     """Computes x:=-x."""
 
-    def _compute(self, x: QFixed):
+    def _compute(self, x: QFixed, ctrl: Qubits | None = None):
         x_as_int = QInt(x)
-        x_as_int.x()
-        qbk.GidneyAdd().compute(x_as_int, 1)
+        x_as_int.x(ctrl)
+        qbk.GidneyAdd().compute(x_as_int, 1, ctrl=ctrl)
 
     def _estimate(self, x: SymbolicQFixed):
         n = x.num_qubits
@@ -151,30 +151,3 @@ class MultiplyConstAdd(Qubrick):
 
     def _estimate(self, dst: SymbolicQFixed, lhs: SymbolicQFixed):
         pass
-
-
-class Sqrt(Qubrick):
-    """Computes square root of QFixed number.
-
-    Uses qbk.Sqrt (which is designed for QUInt and halves result size) and then
-    adds padding qubits so the output has the same size as input.
-
-    Requires even size register size and radix.
-    """
-
-    def _compute(self, x: QFixed):
-        n = x.num_qubits
-        r = x.radix
-        assert n % 2 == 0 and r % 2 == 0, "Size and radix must be even"
-        assert 0 <= r <= n
-
-        func = qbk.Sqrt()
-        func.compute(x)
-        result = func.get_result_qreg()
-        if r > 0:
-            padding_left = self.alloc_temp_qreg(r // 2, "pl")
-            result = padding_left | result
-        if (n - r) > 0:
-            padding_right = self.alloc_temp_qreg((n - r) // 2, "pr")
-            result = result | padding_right
-        self.set_result_qreg(result)

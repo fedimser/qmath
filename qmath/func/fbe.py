@@ -9,17 +9,73 @@ Reference:
 """
 
 import psiqworkbench.qubricks as qbk
-from psiqworkbench import QFixed, QInt, QUInt, Qubits
-from psiqworkbench.qubricks import Qubrick
+from psiqworkbench import QFixed, QInt, Qubits, QUInt
 from psiqworkbench.qubits.base_qubits import BaseQubits
+from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
+
+from .common import AddConst, Negate
+from .sqrt import Sqrt
+from ..utils.symbolic import alloc_temp_qreg_like
+
+
+def _sqrt_half(x: QFixed) -> QFixed:
+    op = Sqrt(half_arg=True)
+    op.compute(x)
+    return op.get_result_qreg()
+
+
+class Neq(Qubrick):
+    """Computes t=(a!=b)."""
+
+    def _compute(self, t: Qubits, a: Qubits, b: Qubits):
+        t.lelbow(a | b)
+        a.x()
+        b.x()
+        t.x(a | b)
+        a.x()
+        b.x()
+        t.x()
 
 
 class CosFbe(Qubrick):
-    """Computes cos(pi*x), where x∈[0,1)."""
+    """Computes cos(pi*x). Correct for any x.
 
-    def _iteration():
-        pass
+    Precision of the answer will be about half of `result_radix`.
+    """
+
+    def __init__(
+        self,
+        *,
+        result_radix: None | int = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.result_radix = result_radix
 
     def _compute(self, x: QFixed):
-        pass
+        if self.result_radix is None:
+            _, a = alloc_temp_qreg_like(self, x)
+        else:
+            a = QFixed(self.alloc_temp_qreg(self.result_radix + 2, name="a"), radix=self.result_radix)
+
+        # 0-th iteration: a:= 1 if x[0]==0 else 0.
+        x[0].x()
+        a[a.radix].x(x[0])
+        x[0].x()
+
+        for i in range(1, x.radix):
+            # Iteration: a:=sqrt((1±a)/2), sign is minus iff x[i-1]!=x[i].
+            t = self.alloc_temp_qreg(1, "t")
+            with Neq().computed(t, x[i - 1], x[i]):
+                Negate().compute(a, ctrl=t)
+                AddConst(1).compute(a)
+            a = _sqrt_half(a)
+            t.release()
+
+        t = self.alloc_temp_qreg(1, "t")
+        with Neq().computed(t, x[x.radix - 1], x[x.radix]):
+            Negate().compute(a, ctrl=t)
+        t.release()
+
+        self.set_result_qreg(a)

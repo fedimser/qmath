@@ -41,6 +41,7 @@ class QPUTestHelper:
         """
         self.result_qreg_mask = result_qreg.mask()
         self.result_qreg_indices = result_qreg.qubit_indices()
+        self.result_radix = result_qreg.radix
         ops = self.qpu.get_instructions()[self.prep_length :]
         self.cpp_ops = convert_ops_to_cpp(ops)
 
@@ -63,7 +64,7 @@ class QPUTestHelper:
         sim._put_native(self.cpp_ops)
         result_qreg = QFixed(
             Qubits(num_qubits=len(self.result_qreg_indices), scatter=self.result_qreg_indices, name="temp", qpu=qpu),
-            radix=self.radix,
+            radix=self.result_radix,
         )
         if check_no_side_effect:
             new_other_val = other_reg.read()
