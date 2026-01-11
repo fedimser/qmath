@@ -42,11 +42,11 @@ class schoolbook_multiplication(Qubrick):
         n2 = len(b)
         w: Qubits = self.alloc_temp_qreg(n2, "w")
         for k in range(n1):
-            for i in range(n1):
+            for i in range(n2):
                 ccnot(b[i], a[k], w[i])
-            print(f"QUInt = {c.read()}")
-            self._plusEqual(c[k: len(c) -1], w)
-            print(f"QUInt = {c.read()}")
+            #print(f"QUInt = {c.read()}")
+            self._plusEqual(c[k: len(c) ], w)
+            #print(f"QUInt = {c.read()}")
             for i in range(n2):
                 ccnot(b[i], a[k], w[i])
 

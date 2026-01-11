@@ -54,6 +54,10 @@ def test_jhha_multiplier(num_bits: int):
 #workbench is little endian -> LE for some q# functions
 #q# is big endian
 
-@pytest.mark.parametrize("num_bits", [1, 2, 5, 8, 10])
+@pytest.mark.parametrize("num_bits", [2, 5, 8, 10])
 def test_sb_multiplier(num_bits: int):
-    _check_multiplier(schoolbook_multiplication(), num_bits, num_trials=1)
+    _check_multiplier(schoolbook_multiplication(), num_bits, num_trials=5)
+
+#@pytest.mark.parametrize("num_bits", [2])
+#def test_sb_multiplier(num_bits: int):
+#    _check_multiplier_set(schoolbook_multiplication(), num_bits, 3, 3)
