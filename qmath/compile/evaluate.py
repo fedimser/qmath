@@ -4,7 +4,7 @@ from psiqworkbench import QPU, QUInt, QFixed, Qubrick
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.utils.symbolic import alloc_temp_qreg_like
-from qmath.func.common import MultiplyAdd, MultiplyConstAdd, Add, AddConst
+from qmath.func.common import MultiplyAdd, MultiplyConstAdd, Add, AddConst, Negate
 from qmath.utils.gates import ParallelCnot
 
 # Type alias to represent quantum register or a literal number.
@@ -39,7 +39,8 @@ class EvaluateExpression(Qubrick):
         return ans
 
     def _implement_unary_op(self, op: ast.BinOp, arg: QValue) -> QValue:
-        print("UNARY OP:", op, arg)
+        if isinstance(op, ast.USub):
+            return self._negate(arg)
         raise ValueError(f"Unsupported unary op: {op}.")
 
     def _implement_binary_op(self, op: ast.BinOp, arg1: QValue, arg2: QValue) -> QValue:
@@ -48,6 +49,15 @@ class EvaluateExpression(Qubrick):
         if isinstance(op, ast.Mult):
             return self._mul(arg1, arg2)
         raise ValueError(f"Unsupported binary op: {op}.")
+
+    def _negate(self, arg: QValue) -> QValue:
+        if isinstance(arg, float):
+            return -arg
+        assert isinstance(arg, QFixed)
+        if arg.mask() in self.immutable_regs:
+            return self._negate(self._make_copy(arg))
+        Negate().compute(arg)
+        return arg
 
     def _add(self, arg1: QValue, arg2: QValue) -> QValue:
         if isinstance(arg1, float) and isinstance(arg2, float):

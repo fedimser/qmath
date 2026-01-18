@@ -12,7 +12,7 @@ from qmath.utils.test_utils import QPUTestHelper
 class EvaluateTestCase:
     expr: str
     args: list[str]
-    func: Callable[[list[float]], float]
+    func: Callable[..., float]
     inputs: list[list[float]]
     num_qubits: int
     qubits_per_reg: int = 8
@@ -32,7 +32,7 @@ def _test_evaluate(tc: EvaluateTestCase):
     qpu_helper.record_op(op.get_result_qreg())
 
     for args in tc.inputs:
-        assert qpu_helper.apply_op(args) == tc.func(args)
+        assert qpu_helper.apply_op(args) == tc.func(*args)
 
 
 # Use this test case for debugging. It does not use any helpers.
@@ -41,13 +41,12 @@ def test_debug():
     qpu.reset(1000)
     qs_x = QFixed(20, name="x", radix=5, qpu=qpu)
     qs_y = QFixed(20, name="y", radix=5, qpu=qpu)
-    qs_z = QFixed(20, name="y", radix=5, qpu=qpu)
-    x, y, z = 1, 2, 3
+    qs_z = QFixed(20, name="z", radix=5, qpu=qpu)
+    x, y, z = -10, 0, 5
     qs_x.write(x)
     qs_y.write(y)
     qs_z.write(z)
 
-    # x + 2*y + 3*z + x*y + x*y*z
     expected = x + 2 * y + 3 * z + x * y + x * y * z
 
     compiler = EvaluateExpression("x + 2*y + 3*z +x*y + x*y*z", qc=qpu)
@@ -62,7 +61,7 @@ def test_add():
         EvaluateTestCase(
             expr="x+y+z",
             args=["x", "y", "z"],
-            func=lambda a: a[0] + a[1] + a[2],
+            func=lambda x, y, z: x + y + z,
             inputs=[[1, 2, -1], [-3.5, 4, 0]],
             num_qubits=50,
         )
@@ -74,7 +73,7 @@ def test_multiply():
         EvaluateTestCase(
             expr="x*y",
             args=["x", "y"],
-            func=lambda a: a[0] * a[1],
+            func=lambda x, y: x * y,
             inputs=[[3, 2], [-3.5, 4]],
             num_qubits=100,
         )
@@ -86,8 +85,22 @@ def test_multiply_const():
         EvaluateTestCase(
             expr="x*2.5",
             args=["x"],
-            func=lambda a: a[0] * 2.5,
+            func=lambda x: x * 2.5,
             inputs=[[-1], [0], [2], [4]],
             num_qubits=100,
+        )
+    )
+
+
+def test_complex_expression():
+    _test_evaluate(
+        EvaluateTestCase(
+            expr="-x + 2*y + 3*z +x*y + x*y*z",
+            args=["x", "y", "z"],
+            func=lambda x, y, z: -x + 2 * y + 3 * z + x * y + x * y * z,
+            inputs=[[1, 2.0, -3], [4.125, 5, 6.5], [-10, 0, 5]],
+            num_qubits=200,
+            qubits_per_reg=15,
+            radix=5,
         )
     )
