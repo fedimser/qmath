@@ -4,4 +4,5 @@ build/
 *.egg-info/
 tmp*
 notebooks/re/tmp*
+notebooks/tmp*
 profiling/profile.json

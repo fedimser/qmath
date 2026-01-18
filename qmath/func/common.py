@@ -138,7 +138,17 @@ class MultiplyAdd(Qubrick):
         self.get_qc().add_cost_event(cost)
 
 
-# TODO: implement.
+# Preparation for MultiplyConstAdd to handle negative inputs.
+class _MulConstPrep(Qubrick):
+
+    def _compute(self, x: QFixed, x_sign: Qubits, y: float, dst: QFixed):
+        x_sign[0].lelbow(x[-1])
+        Negate().compute(x, ctrl=x_sign)
+        if y < 0:
+            x_sign.x()
+        dst.x(x_sign)
+
+
 class MultiplyConstAdd(Qubrick):
     """Computes dst += lhs * rhs (rhs is a classical number)."""
 
@@ -146,8 +156,35 @@ class MultiplyConstAdd(Qubrick):
         super().__init__(**kwargs)
         self.rhs = rhs
 
+    # z += y*x, assuming x>=0, y>0.
+    def _compute_positive(self, x: QFixed, y: float, z: QFixed):
+        assert y > 0
+        x = QInt(x)
+        z = QInt(z)
+        min_i = x.radix - z.radix - (x.num_qubits - 1)
+        max_i = x.radix - z.radix + (z.num_qubits - 1)
+
+        for i in range(min_i, max_i + 1):
+            shift = z.radix - x.radix + i
+            bit = int(y * (2 ** (-shift))) % 2
+            if bit == 1:
+                if shift < 0:
+                    qbk.GidneyAdd().compute(z, x[(-shift):])
+                else:
+                    qbk.GidneyAdd().compute(z[shift:], x)
+
     def _compute(self, dst: QFixed, lhs: QFixed):
-        pass
+        if self.rhs == 0:
+            return
+
+        x_sign = self.alloc_temp_qreg(1, "x_sign")
+
+        # Preparation to handle negative inputs.
+        with _MulConstPrep().computed(lhs, x_sign, self.rhs, dst):
+            self._compute_positive(lhs, abs(self.rhs), dst)
+
+        x_sign.release()
 
     def _estimate(self, dst: SymbolicQFixed, lhs: SymbolicQFixed):
+        # TODO: implement.
         pass
