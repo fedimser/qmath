@@ -87,8 +87,12 @@ class EvaluateExpression(Qubrick):
             return arg1
 
     def _sub(self, arg1: QValue, arg2: QValue) -> QValue:
+        if isinstance(arg1, float) and isinstance(arg2, float):
+            return arg1 - arg2
         if isinstance(arg1, float):
-            return self._add(-arg1, arg2)
+            ans = self._add(-arg1, arg2)
+            Negate().compute(ans)
+            return ans
         if isinstance(arg2, float):
             return self._add(arg1, -arg2)
 
@@ -96,13 +100,12 @@ class EvaluateExpression(Qubrick):
         assert isinstance(arg2, QFixed)
 
         if arg1.mask() not in self.immutable_regs:
-            # arg1 -= arg2
+            # arg1 -= arg2.
             with Negate().computed(arg1):
                 Add().compute(arg1, arg2)
             return arg1
         elif arg2.mask() not in self.immutable_regs:
-            # arg2 := -arg2
-            # arg2 += arg1
+            # arg2 := -arg2; arg2 += arg1.
             Negate().compute(arg2)
             Add().compute(arg2, arg1)
             return arg2

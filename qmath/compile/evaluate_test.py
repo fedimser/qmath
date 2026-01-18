@@ -72,6 +72,19 @@ def test_add():
     )
 
 
+def test_sub_classical_quantum():
+    _test_evaluate(
+        EvaluateTestCase(
+            expr="5-x",
+            args=["x"],
+            func=lambda x: 5 - x,
+            inputs=[[-1.25], [0], [5], [11.5]],
+            num_qubits=50,
+            radix=2,
+        )
+    )
+
+
 def test_multiply():
     _test_evaluate(
         EvaluateTestCase(
