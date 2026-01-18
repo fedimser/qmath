@@ -1,13 +1,12 @@
-from qmath.utils.re_utils import re_numeric_fixed_point, FILTERS_FOR_NUMERIC_RE
-from psiqworkbench.symbolics import Parameter
-from psiqworkbench.resource_estimation.qre._resource_dict import ResourceDict
-from psiqworkbench import QPU, QUInt, SymbolicQPU, SymbolicQubits, resource_estimator, QFixed
-from qmath.func.fbe import CosFbe
-from qmath.utils.symbolic import SymbolicQFixed
-import numpy as np
 import os
-from qmath.utils.re_utils import verify_re
 
+from psiqworkbench import QPU, QFixed, SymbolicQPU, resource_estimator
+from psiqworkbench.resource_estimation.qre._resource_dict import ResourceDict
+from psiqworkbench.symbolics import Parameter
+
+from qmath.func.fbe import CosFbe
+from qmath.utils.re_utils import FILTERS_FOR_NUMERIC_RE, verify_re
+from qmath.utils.symbolic import SymbolicQFixed
 
 RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
 
