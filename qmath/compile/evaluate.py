@@ -5,6 +5,8 @@ from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.utils.symbolic import alloc_temp_qreg_like
 from qmath.func.common import MultiplyAdd, MultiplyConstAdd, Add, AddConst, Negate
+from qmath.func.square import Square
+
 from qmath.utils.gates import ParallelCnot
 
 # Type alias to represent quantum register or a literal number.
@@ -46,6 +48,8 @@ class EvaluateExpression(Qubrick):
     def _implement_binary_op(self, op: ast.BinOp, arg1: QValue, arg2: QValue) -> QValue:
         if isinstance(op, ast.Add):
             return self._add(arg1, arg2)
+        if isinstance(op, ast.Sub):
+            return self._sub(arg1, arg2)
         if isinstance(op, ast.Mult):
             return self._mul(arg1, arg2)
         raise ValueError(f"Unsupported binary op: {op}.")
@@ -82,6 +86,30 @@ class EvaluateExpression(Qubrick):
             AddConst(arg2).compute(arg1)
             return arg1
 
+    def _sub(self, arg1: QValue, arg2: QValue) -> QValue:
+        if isinstance(arg1, float):
+            return self._add(-arg1, arg2)
+        if isinstance(arg2, float):
+            return self._add(arg1, -arg2)
+
+        assert isinstance(arg1, QFixed)
+        assert isinstance(arg2, QFixed)
+
+        if arg1.mask() not in self.immutable_regs:
+            # arg1 -= arg2
+            with Negate().computed(arg1):
+                Add().compute(arg1, arg2)
+            return arg1
+        elif arg2.mask() not in self.immutable_regs:
+            # arg2 := -arg2
+            # arg2 += arg1
+            Negate().compute(arg2)
+            Add().compute(arg2, arg1)
+            return arg2
+        else:
+            # Both immutable. Allocate answer.
+            return self._negate(arg1, self._make_copy(arg2))
+
     def _mul(self, arg1: QValue, arg2: QValue) -> QValue:
         if isinstance(arg1, float) and isinstance(arg2, float):
             return arg1 * arg2
@@ -92,6 +120,9 @@ class EvaluateExpression(Qubrick):
         _, ans = alloc_temp_qreg_like(self, arg1)
 
         if isinstance(arg2, QFixed):
+            if arg1.mask() == arg2.mask():
+                Square().compute(arg1, ans)
+                return ans
             MultiplyAdd().compute(ans, arg1, arg2)
         else:
             assert isinstance(arg2, float)

@@ -1,11 +1,15 @@
+import os
 from dataclasses import dataclass
 from typing import Callable
+import pytest
 
 from psiqworkbench import QPU, QFixed
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.compile import EvaluateExpression
 from qmath.utils.test_utils import QPUTestHelper
+
+RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
 
 
 @dataclass
@@ -36,6 +40,7 @@ def _test_evaluate(tc: EvaluateTestCase):
 
 
 # Use this test case for debugging. It does not use any helpers.
+@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
 def test_debug():
     qpu = QPU(filters=BIT_DEFAULT)
     qpu.reset(1000)
@@ -47,9 +52,8 @@ def test_debug():
     qs_y.write(y)
     qs_z.write(z)
 
-    expected = x + 2 * y + 3 * z + x * y + x * y * z
-
-    compiler = EvaluateExpression("x + 2*y + 3*z +x*y + x*y*z", qc=qpu)
+    expected = -x + 2 * (y + 3 * z - x * x) + x * y + x * y * z - z * x
+    compiler = EvaluateExpression("-x + 2*(y + 3*z - x*x) + x*y + x*y*z - z*x", qc=qpu)
     compiler.compute({"x": qs_x, "y": qs_y, "z": qs_z})
     ans = compiler.get_result_qreg()
 
@@ -92,15 +96,16 @@ def test_multiply_const():
     )
 
 
+@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
 def test_complex_expression():
     _test_evaluate(
         EvaluateTestCase(
-            expr="-x + 2*y + 3*z +x*y + x*y*z",
+            expr="-x + 2*(y + 3*z - x*x) + x*y + x*y*z - z*x",
             args=["x", "y", "z"],
-            func=lambda x, y, z: -x + 2 * y + 3 * z + x * y + x * y * z,
+            func=lambda x, y, z: -x + 2 * (y + 3 * z - x * x) + x * y + x * y * z - z * x,
             inputs=[[1, 2.0, -3], [4.125, 5, 6.5], [-10, 0, 5]],
-            num_qubits=200,
-            qubits_per_reg=15,
-            radix=5,
+            num_qubits=300,
+            qubits_per_reg=20,
+            radix=10,
         )
     )
