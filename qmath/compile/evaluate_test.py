@@ -38,17 +38,23 @@ def _test_evaluate(tc: EvaluateTestCase):
 # Use this test case for debugging. It does not use any helpers.
 def test_debug():
     qpu = QPU(filters=BIT_DEFAULT)
-    qpu.reset(200)
-    qs_x = QFixed(10, name="x", radix=5, qpu=qpu)
-    qs_y = QFixed(10, name="y", radix=5, qpu=qpu)
-    qs_x.write(2)
-    qs_y.write(3)
+    qpu.reset(1000)
+    qs_x = QFixed(20, name="x", radix=5, qpu=qpu)
+    qs_y = QFixed(20, name="y", radix=5, qpu=qpu)
+    qs_z = QFixed(20, name="y", radix=5, qpu=qpu)
+    x, y, z = 1, 2, 3
+    qs_x.write(x)
+    qs_y.write(y)
+    qs_z.write(z)
 
-    compiler = EvaluateExpression("x*y", qc=qpu)
-    compiler.compute({"x": qs_x, "y": qs_y})
+    # x + 2*y + 3*z + x*y + x*y*z
+    expected = x + 2 * y + 3 * z + x * y + x * y * z
+
+    compiler = EvaluateExpression("x + 2*y + 3*z +x*y + x*y*z", qc=qpu)
+    compiler.compute({"x": qs_x, "y": qs_y, "z": qs_z})
     ans = compiler.get_result_qreg()
 
-    assert ans.read() == 6
+    assert ans.read() == expected
 
 
 def test_add():

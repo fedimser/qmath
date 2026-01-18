@@ -5,6 +5,7 @@ from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.utils.symbolic import alloc_temp_qreg_like
 from qmath.func.common import MultiplyAdd, MultiplyConstAdd, Add, AddConst
+from qmath.utils.gates import ParallelCnot
 
 # Type alias to represent quantum register or a literal number.
 QValue = QFixed | float
@@ -25,10 +26,17 @@ ops = []
 class EvaluateExpression(Qubrick):
     """Evaluates arithmetic expression."""
 
-    def __init__(self, expr: str, **kwargs):
+    def __init__(self, expr: str, mutable_vars: set[str] = None, **kwargs):
         super().__init__(**kwargs)
         self.expr = expr
         self.vars = dict()
+        self.immutable_regs = set()
+        self.mutable_vars = mutable_vars or set()
+
+    def _make_copy(self, x: QFixed) -> QFixed:
+        _, ans = alloc_temp_qreg_like(self, x)
+        ParallelCnot().compute(x, ans)
+        return ans
 
     def _implement_unary_op(self, op: ast.BinOp, arg: QValue) -> QValue:
         print("UNARY OP:", op, arg)
@@ -48,12 +56,19 @@ class EvaluateExpression(Qubrick):
             return self._add(arg2, arg1)
 
         assert isinstance(arg1, QFixed)
-        # TODO: check if we are allowed to mutate or not.
+
         if isinstance(arg2, QFixed):
+            # Quantum-quantum addition.
+            if arg1.mask() in self.immutable_regs and arg2.mask() in self.immutable_regs:
+                return self._add(self._make_copy(arg1), arg2)
+            if arg1.mask() in self.immutable_regs:
+                return self._add(arg2, arg1)
             Add().compute(arg1, arg2)
             return arg1
         else:
             assert isinstance(arg2, float)
+            if arg1.mask() in self.immutable_regs:
+                return self._add(self._make_copy(arg1), arg2)
             AddConst(arg2).compute(arg1)
             return arg1
 
@@ -92,7 +107,10 @@ class EvaluateExpression(Qubrick):
     def _compute(self, args: dict):
         self.vars = dict()
         for key, value in args.items():
-            self.vars[key] = _make_qvalue(value)
+            value = _make_qvalue(value)
+            self.vars[key] = value
+            if key not in self.mutable_vars and isinstance(value, QFixed):
+                self.immutable_regs.add(value.mask())
 
         root = ast.parse(self.expr, mode="eval")
         ans = self._convert_ast_node(root.body)
