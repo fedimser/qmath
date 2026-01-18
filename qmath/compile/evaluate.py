@@ -4,7 +4,7 @@ from psiqworkbench import QPU, QUInt, QFixed, Qubrick
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.utils.symbolic import alloc_temp_qreg_like
-from qmath.func.common import MultiplyAdd, Add, AddConst
+from qmath.func.common import MultiplyAdd, MultiplyConstAdd, Add, AddConst
 
 # Type alias to represent quantum register or a literal number.
 QValue = QFixed | float
@@ -64,9 +64,13 @@ class EvaluateExpression(Qubrick):
             return self._mul(arg2, arg1)
 
         assert isinstance(arg1, QFixed)
-        assert isinstance(arg2, QFixed)
         _, ans = alloc_temp_qreg_like(self, arg1)
-        MultiplyAdd().compute(ans, arg1, arg2)
+
+        if isinstance(arg2, QFixed):
+            MultiplyAdd().compute(ans, arg1, arg2)
+        else:
+            assert isinstance(arg2, float)
+            MultiplyConstAdd(arg2).compute(ans, arg1)
         return ans
 
     def _convert_ast_node(self, node) -> QFixed | float:

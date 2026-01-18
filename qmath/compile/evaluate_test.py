@@ -73,3 +73,15 @@ def test_multiply():
             num_qubits=100,
         )
     )
+
+
+def test_multiply_const():
+    _test_evaluate(
+        EvaluateTestCase(
+            expr="x*2.5",
+            args=["x"],
+            func=lambda a: a[0] * 2.5,
+            inputs=[[-1], [0], [2], [4]],
+            num_qubits=100,
+        )
+    )
