@@ -7,29 +7,16 @@ from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 from .square import Square
 from .common import Subtract, MultiplyAdd
 from ..utils.symbolic import alloc_temp_qreg_like
+from .bits import HighestSetBit
 
 
 class _InitialGuess(Qubrick):
-    def _msb(self, a: Qubits, ans: Qubits):
-        """Finds most significant bit in a and sets it in ans."""
-        flag: Qubits = self.alloc_temp_qreg(1, "flag")
-
-        # For each input qubit i compute which output qubit must be set if i is MSB.
-        for i in range(a.num_qubits - 1, -1, -1):
-            # Copy a[i] to ans[j], but only if flag is unset.
-            flag.x()
-            ans[i].lelbow(a[i] | flag)
-            flag.x()
-
-            # If ans[i]=1 (which implies flag was unset), set the flag.
-            # All less significant qubits will be ignored.
-            flag.x(ans[i])
 
     def _compute(self, a: QFixed, ans: QFixed):
         """Computes ans := 2**(-(floor(log2(a)))//2)."""
         # TODO: can this be optimized to compute result directly into ans?
         r = self.alloc_temp_qreg(a.num_qubits, "r")
-        self._msb(a, r)
+        HighestSetBit().compute(a, r)
 
         for i in range(a.num_qubits - 1, -1, -1):
             pos1 = i - a.radix

@@ -44,6 +44,10 @@ class SquareOptimized(Qubrick):
     While this precision issue is not fixed, it's recommedned to use Square instead.
     """
 
+    def __init__(self, *, signed=True, **kwargs):
+        super().__init__(**kwargs)
+        self.signed = signed
+
     def _compute_unsigned(self, x: QUFixed, target: QUFixed):
         """Computes square assuming x is unsigned."""
         anc: Qubits = self.alloc_temp_qreg(target.num_qubits, "anc")
@@ -61,10 +65,13 @@ class SquareOptimized(Qubrick):
         anc.release()
 
     def _compute(self, x: QFixed, target: QFixed):
-        with AbsInPlace().computed(x):
-            x_unsigned = QUFixed(x[0 : x.num_qubits - 1], radix=x.radix)
-            target_unsigned = QUFixed(target[0 : target.num_qubits - 1], radix=target.radix)
-            self._compute_unsigned(x_unsigned, target_unsigned)
+        if self.signed:
+            with AbsInPlace().computed(x):
+                x_unsigned = QUFixed(x[0 : x.num_qubits - 1], radix=x.radix)
+                target_unsigned = QUFixed(target[0 : target.num_qubits - 1], radix=target.radix)
+                self._compute_unsigned(x_unsigned, target_unsigned)
+        else:
+            self._compute_unsigned(x, target)
 
     def _estimate(self, x: SymbolicQFixed, target: SymbolicQFixed):
         n = x.num_qubits
