@@ -1,6 +1,6 @@
 """Bitwise functions."""
 
-from psiqworkbench import QFixed, QInt, QUInt, Qubits
+from psiqworkbench import Qubits
 from psiqworkbench.qubricks import Qubrick
 
 

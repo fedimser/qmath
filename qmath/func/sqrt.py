@@ -1,13 +1,9 @@
 import psiqworkbench.qubricks as qbk
-from psiqworkbench import QFixed, Qubits, QUFixed
+from psiqworkbench import QFixed
 from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
-from psiqworkbench.symbolics import Parameter
 
-
-from ..func.common import AbsInPlace, MultiplyAdd
-from ..utils.gates import ParallelCnot
-from ..utils.symbolic import SymbolicQFixed, alloc_temp_qreg_like
+from ..utils.symbolic import SymbolicQFixed
 
 
 class Sqrt(Qubrick):
