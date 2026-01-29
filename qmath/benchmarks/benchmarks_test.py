@@ -9,12 +9,13 @@ This allows us to detect regressions and quantify optimizations.
 from dataclasses import dataclass
 
 import psiqworkbench.qubricks as qbk
+import pytest
 from psiqworkbench import QPU, QFixed, QUInt
 
-from qmath.uint_arith.add import CDKMAdder, Increment, TTKAdder
 from qmath.func import InverseSquareRoot
 from qmath.func.common import Subtract
 from qmath.func.square import Square, SquareOptimized
+from qmath.uint_arith.add import CDKMAdder, Increment, TTKAdder
 
 BENCHMARKS_FILE_NAME = "qmath/benchmarks/benchmarks.csv"
 
@@ -130,6 +131,7 @@ def _run_benchmarks() -> str:
     return "\n".join([BenchmarkResult.csv_header()] + [r.to_csv_row() for r in results])
 
 
+@pytest.mark.slow
 def test_benchmarks():
     with open(BENCHMARKS_FILE_NAME, "r") as f:
         golden = f.read()

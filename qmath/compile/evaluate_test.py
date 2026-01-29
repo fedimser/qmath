@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass
 from typing import Callable
 import pytest
@@ -8,8 +7,6 @@ from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.compile import EvaluateExpression
 from qmath.utils.test_utils import QPUTestHelper
-
-RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
 
 
 @dataclass
@@ -40,7 +37,7 @@ def _test_evaluate(tc: EvaluateTestCase):
 
 
 # Use this test case for debugging. It does not use any helpers.
-@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
+@pytest.mark.slow
 def test_debug():
     qpu = QPU(filters=BIT_DEFAULT)
     qpu.reset(1000)
@@ -60,6 +57,7 @@ def test_debug():
     assert ans.read() == expected
 
 
+@pytest.mark.smoke
 def test_add():
     _test_evaluate(
         EvaluateTestCase(
@@ -109,7 +107,7 @@ def test_multiply_const():
     )
 
 
-@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
+@pytest.mark.slow
 def test_complex_expression():
     _test_evaluate(
         EvaluateTestCase(

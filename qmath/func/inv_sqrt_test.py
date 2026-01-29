@@ -1,14 +1,12 @@
-import os
-import pytest
-import numpy as np
-from psiqworkbench import QPU, QFixed, QUInt
-
-from qmath.func.inv_sqrt import _InitialGuess, _NewtonIteration, InverseSquareRoot
-from qmath.utils.test_utils import QPUTestHelper
-from math import floor, log2
 import random
+from math import floor, log2
 
-RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
+import numpy as np
+import pytest
+from psiqworkbench import QFixed
+
+from qmath.func.inv_sqrt import InverseSquareRoot, _InitialGuess, _NewtonIteration
+from qmath.utils.test_utils import QPUTestHelper
 
 
 def test_newton_iteration():
@@ -39,6 +37,7 @@ def test_initial_guess():
         assert result == expected
 
 
+@pytest.mark.slow
 def test_inverse_square_root_low_precision():
     qpu_helper = QPUTestHelper(num_qubits=400, qubits_per_reg=15, radix=11)
     func = InverseSquareRoot(num_iterations=3)

@@ -45,3 +45,8 @@ line_length = 120
 filterwarnings = [
     "ignore::FutureWarning"  # To ignore UnstableWarnings.
 ]
+markers = [
+    "smoke: smoke tests (quick checks for basic functionality)",
+    "slow: slow tests (>1s to run)",
+    "re: resource estimation tests",
+]

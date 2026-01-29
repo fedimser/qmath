@@ -1,12 +1,9 @@
 from qmath.func.inv_sqrt import _InitialGuess, _NewtonIteration, InverseSquareRoot
 from qmath.utils.re_utils import re_symbolic_fixed_point, re_numeric_fixed_point, verify_re
 import pytest
-import os
-
-RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
 
 
-@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
+@pytest.mark.re
 def test_re_initial_guess():
     op = _InitialGuess()
     re_symbolic = re_symbolic_fixed_point(op, n_inputs=2)
@@ -15,7 +12,8 @@ def test_re_initial_guess():
         verify_re(re_symbolic, re_numeric, {"n": n, "radix": radix})
 
 
-@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
+@pytest.mark.re
+@pytest.mark.slow
 def test_re_newton_iteration():
     op = _NewtonIteration()
     re_symbolic = re_symbolic_fixed_point(op, n_inputs=3)
@@ -24,13 +22,13 @@ def test_re_newton_iteration():
         verify_re(re_symbolic, re_numeric, {"n": n, "radix": radix}, av_rtol=0.001)
 
 
+@pytest.mark.re
+@pytest.mark.slow
 @pytest.mark.parametrize("num_iterations", [1, 2])
 def test_re_inv_sqrt(num_iterations: int):
     op = InverseSquareRoot(num_iterations=num_iterations)
     re_symbolic = re_symbolic_fixed_point(op, n_inputs=1)
     re_numeric = lambda assgn: re_numeric_fixed_point(op, assgn, n_inputs=1, qubits_factor=20)
-    test_cases = [(6, 3)]
-    if RUN_SLOW_TESTS:
-        test_cases += [(6, 2), (6, 4), (10, 3), (10, 5), (10, 8), (20, 7), (20, 12)]
+    test_cases = [(6, 2), (6, 3), (6, 4), (10, 3), (10, 5), (10, 8), (20, 7), (20, 12)]
     for n, radix in test_cases:
         verify_re(re_symbolic, re_numeric, {"n": n, "radix": radix}, av_rtol=0.001)

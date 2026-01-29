@@ -36,6 +36,7 @@ def re_numeric_divider(op: TMVHDivider, assgn: dict[str, int]) -> ResourceDict:
     return re.resources()
 
 
+@pytest.mark.re
 @pytest.mark.parametrize("restoring", [True, False])
 def test_re_tmvh_divider(restoring: bool):
     op = TMVHDivider(restoring=restoring)

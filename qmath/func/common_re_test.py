@@ -3,6 +3,7 @@ from qmath.utils.re_utils import re_numeric_fixed_point, re_symbolic_fixed_point
 import pytest
 
 
+@pytest.mark.re
 def test_re_negate():
     op = Negate()
     re_symbolic = re_symbolic_fixed_point(op, n_inputs=1)
@@ -11,6 +12,7 @@ def test_re_negate():
         verify_re(re_symbolic, re_numeric, {"n": n, "radix": radix})
 
 
+@pytest.mark.re
 def test_re_abs():
     op = AbsInPlace()
     re_symbolic = re_symbolic_fixed_point(op, n_inputs=1)
@@ -19,6 +21,7 @@ def test_re_abs():
         verify_re(re_symbolic, re_numeric, {"n": n, "radix": radix}, av_atol=0.5)
 
 
+@pytest.mark.re
 def test_re_add():
     op = Add()
     re_symbolic = re_symbolic_fixed_point(op, n_inputs=2)
@@ -27,6 +30,7 @@ def test_re_add():
         verify_re(re_symbolic, re_numeric, {"n": n, "radix": radix})
 
 
+@pytest.mark.re
 @pytest.mark.parametrize("c", [5 / 3, 6.0, 1.75])
 def test_re_add_const(c: float):
     op = AddConst(c)
@@ -36,6 +40,7 @@ def test_re_add_const(c: float):
         verify_re(re_symbolic, re_numeric, {"n": n, "radix": radix})
 
 
+@pytest.mark.re
 def test_re_subtract():
     op = Subtract()
     re_symbolic = re_symbolic_fixed_point(op, n_inputs=2)
@@ -44,6 +49,7 @@ def test_re_subtract():
         verify_re(re_symbolic, re_numeric, {"n": n, "radix": radix})
 
 
+@pytest.mark.re
 def test_re_multiply_add():
     op = MultiplyAdd()
     re_symbolic = re_symbolic_fixed_point(op, n_inputs=3)

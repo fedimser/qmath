@@ -1,3 +1,4 @@
+import pytest
 from psiqworkbench import QPU, QUInt, SymbolicQPU, SymbolicQubits, resource_estimator
 from psiqworkbench.resource_estimation.qre._resource_dict import ResourceDict
 from psiqworkbench.symbolics import Parameter
@@ -33,6 +34,7 @@ def re_numeric_multiplier(op: Multiplier, assgn: dict[str, int]) -> ResourceDict
     return re.resources()
 
 
+@pytest.mark.re
 def test_re_jhha():
     op = JHHAMultipler()
     re_symbolic = re_symbolic_multiplier(op)
@@ -41,6 +43,7 @@ def test_re_jhha():
         verify_re(re_symbolic, re_numeric, {"n": n})
 
 
+@pytest.mark.re
 def test_re_mct():
     op = MCTMultipler()
     re_symbolic = re_symbolic_multiplier(op)

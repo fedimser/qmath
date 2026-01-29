@@ -1,6 +1,3 @@
-"""Quantum algorithms for evaluating polynomials and polynomial approximations."""
-
-import os
 import random
 
 import numpy as np
@@ -10,8 +7,6 @@ from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.poly import HornerScheme
 from qmath.utils.test_utils import QPUTestHelper
-
-RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
 
 
 @pytest.mark.parametrize("coefs", [[2], [-2, 3.5], [3.5, 2.5, -1]])
@@ -27,6 +22,7 @@ def test_horner_linear(coefs: list[float]):
     assert result == np.polyval(coefs[::-1], x)
 
 
+@pytest.mark.slow
 def test_horner_random():
     qpu_helper = QPUTestHelper(num_qubits=500, qubits_per_reg=30, radix=16, num_inputs=1)
     q_x = qpu_helper.inputs[0]

@@ -1,6 +1,3 @@
-import os
-import random
-
 import numpy as np
 import pytest
 from psiqworkbench import QPU, QFixed, QUInt
@@ -8,8 +5,6 @@ from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.utils.test_utils import QPUTestHelper
 from qmath.poly import WritePieceNumber, EvalPiecewisePolynomial, PiecewisePolynomial, Piece, EvalFunctionPPA
-
-RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
 
 
 def test_write_piece_number():
@@ -51,7 +46,19 @@ def test_eval_piecewise_polynomial():
         assert result == poly.eval(x)
 
 
-@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
+@pytest.mark.smoke
+def test_eval_linear():
+    qpu = QPU(filters=BIT_DEFAULT)
+    qpu.reset(100)
+    qs_x = QFixed(8, name="x", radix=3, qpu=qpu)
+    qs_x.write(2.5)
+    func = EvalFunctionPPA(lambda x: 1.5 * x + 1, interval=(-1, 1), degree=1, error_tol=1e-10)
+    func.compute(qs_x)
+    result = func.get_result_qreg().read()
+    assert result == 4.75
+
+
+@pytest.mark.slow
 def test_eval_sin():
     qpu_helper = QPUTestHelper(num_qubits=500, qubits_per_reg=20, radix=15, num_inputs=1)
     q_x = qpu_helper.inputs[0]

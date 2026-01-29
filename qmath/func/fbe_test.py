@@ -1,12 +1,21 @@
-import os
-
 import numpy as np
 import pytest
+from psiqworkbench import QPU, QFixed
+from psiqworkbench.filter_presets import BIT_DEFAULT
 
 from qmath.func.fbe import CosFbe, Log2Fbe, SinFbe
 from qmath.utils.test_utils import QPUTestHelper
 
-RUN_SLOW_TESTS = os.getenv("RUN_SLOW_TESTS") == "1"
+
+@pytest.mark.smoke
+def test_sin_fast():
+    qpu = QPU(filters=BIT_DEFAULT)
+    qpu.reset(100)
+    qs_x = QFixed(5, name="x", radix=3, qpu=qpu)
+    qs_x.write(0.5)
+    op = SinFbe()
+    op.compute(qs_x)
+    assert op.get_result_qreg().read() == 1.0  # sin(pi/2)==1.
 
 
 def test_cos():
@@ -37,7 +46,7 @@ def test_sin():
         assert abs(result - expected) < 1e-4
 
 
-@pytest.mark.skipif(not RUN_SLOW_TESTS, reason="slow test")
+@pytest.mark.slow
 def test_log2():
     qpu_helper = QPUTestHelper(num_inputs=1, num_qubits=1000, qubits_per_reg=30, radix=24)
     qs_x = qpu_helper.inputs[0]

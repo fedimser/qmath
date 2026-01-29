@@ -1,9 +1,12 @@
 import random
 
-from qmath.func.common import AbsInPlace, Subtract, MultiplyConstAdd
+import pytest
+
+from qmath.func.common import AbsInPlace, MultiplyConstAdd, Subtract
 from qmath.utils.test_utils import QPUTestHelper
 
 
+@pytest.mark.smoke
 def test_abs():
     qpu_helper = QPUTestHelper(num_inputs=1, num_qubits=10, qubits_per_reg=5, radix=2)
     qs_x = qpu_helper.inputs[0]
@@ -14,6 +17,7 @@ def test_abs():
         assert qpu_helper.apply_op([x]) == abs(x)
 
 
+@pytest.mark.smoke
 def test_subtract():
     qpu_helper = QPUTestHelper(num_inputs=2, num_qubits=200, qubits_per_reg=40, radix=30)
     qs_x, qs_y = qpu_helper.inputs
@@ -28,6 +32,7 @@ def test_subtract():
         assert abs(result - expected) < 1e-9
 
 
+@pytest.mark.smoke
 def test_multiply_const_add():
     for y in [-11.25, 0, 1.5, 10.3]:
         qpu_helper = QPUTestHelper(num_inputs=2, num_qubits=200, qubits_per_reg=25, radix=15)

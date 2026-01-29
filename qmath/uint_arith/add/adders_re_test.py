@@ -4,6 +4,7 @@ from qmath.uint_arith.add import CDKMAdder, TTKAdder
 from qmath.utils.re_utils import re_numeric_int_binary_op, re_symbolic_int_binary_op, verify_re
 
 
+@pytest.mark.re
 @pytest.mark.parametrize("controlled", [False, True])
 def test_adder_ttk_re(controlled: bool):
     adder = TTKAdder()
@@ -13,6 +14,7 @@ def test_adder_ttk_re(controlled: bool):
         verify_re(re_symbolic, re_numeric, {"n": n})
 
 
+@pytest.mark.re
 @pytest.mark.parametrize("controlled", [False, True])
 def test_adder_cdkm_re(controlled: bool):
     adder = CDKMAdder()
