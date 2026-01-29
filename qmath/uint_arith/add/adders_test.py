@@ -7,7 +7,7 @@ from psiqworkbench import QPU, Qubits, QUInt
 from psiqworkbench.filter_presets import BIT_DEFAULT
 from psiqworkbench.interfaces import Adder
 
-from qmath.add import CDKMAdder, TTKAdder
+from qmath.uint_arith.add import CDKMAdder, TTKAdder
 
 
 # Tests in-place adder:

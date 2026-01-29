@@ -6,9 +6,9 @@ from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 from psiqworkbench.symbolics.parameter import Max, Parameter
 from psiqworkbench import SymbolicQubits
 
-from ..utils.gates import cnot
-from ..utils.padding import padded
-from ..utils.re_utils import re_symbolic_int_binary_op
+from ...utils.gates import cnot
+from ...utils.padding import padded
+from ...utils.re_utils import re_symbolic_int_binary_op
 
 
 class TMVHDivider(Qubrick):

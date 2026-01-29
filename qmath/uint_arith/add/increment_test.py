@@ -1,6 +1,6 @@
 import random
 
-from qmath.add import Increment
+from qmath.uint_arith.add import Increment
 from qmath.utils.test_utils import QPUTestHelper
 
 

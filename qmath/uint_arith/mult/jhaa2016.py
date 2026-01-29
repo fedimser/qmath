@@ -3,8 +3,8 @@ from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
-from ..utils.gates import ccnot
-from ..utils.rotate import rotate_right
+from ...utils.gates import ccnot
+from ...utils.rotate import rotate_right
 from .multiplier import Multiplier
 
 

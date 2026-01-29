@@ -2,8 +2,8 @@ from psiqworkbench import QPU, QUInt, SymbolicQPU, SymbolicQubits, resource_esti
 from psiqworkbench.resource_estimation.qre._resource_dict import ResourceDict
 from psiqworkbench.symbolics import Parameter
 
-from qmath.mult import JHHAMultipler, MCTMultipler, Multiplier
-from qmath.utils.re_utils import verify_re, FILTERS_FOR_NUMERIC_RE
+from qmath.uint_arith.mult import JHHAMultipler, MCTMultipler, Multiplier
+from qmath.utils.re_utils import FILTERS_FOR_NUMERIC_RE, verify_re
 
 
 def re_symbolic_multiplier(op: Multiplier) -> ResourceDict:

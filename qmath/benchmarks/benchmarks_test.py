@@ -11,7 +11,7 @@ from dataclasses import dataclass
 import psiqworkbench.qubricks as qbk
 from psiqworkbench import QPU, QFixed, QUInt
 
-from qmath.add import CDKMAdder, Increment, TTKAdder
+from qmath.uint_arith.add import CDKMAdder, Increment, TTKAdder
 from qmath.func import InverseSquareRoot
 from qmath.func.common import Subtract
 from qmath.func.square import Square, SquareOptimized

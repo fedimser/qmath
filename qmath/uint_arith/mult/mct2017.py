@@ -3,7 +3,7 @@ from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
-from ..utils.gates import ccnot, cnot
+from ...utils.gates import ccnot, cnot
 from .multiplier import Multiplier
 
 

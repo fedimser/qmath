@@ -6,7 +6,7 @@ from psiqworkbench.interoperability import implements
 from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
-from ..utils.padding import padded
+from ...utils.padding import padded
 
 
 class ApplyOuterTTKAdder(Qubrick):

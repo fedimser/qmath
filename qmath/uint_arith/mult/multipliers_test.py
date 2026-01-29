@@ -4,7 +4,7 @@ import pytest
 from psiqworkbench import QPU, QUInt
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
-from qmath.mult import JHHAMultipler, MCTMultipler, Multiplier
+from qmath.uint_arith.mult import JHHAMultipler, MCTMultipler, Multiplier
 
 
 def _check_multiplier(multiplier: Multiplier, num_bits, num_trials=5):

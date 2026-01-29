@@ -4,8 +4,8 @@ import pytest
 from psiqworkbench import QPU, QUInt
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
-from qmath.add import CDKMAdder, TTKAdder
-from qmath.div import TMVHDivider
+from ..add import CDKMAdder, TTKAdder
+from ..div import TMVHDivider
 
 
 def _check_divider(divider: TMVHDivider, num_bits: tuple[int, int], num_trials=2):

@@ -1,6 +1,6 @@
 import pytest
 
-from qmath.add import CDKMAdder, TTKAdder
+from qmath.uint_arith.add import CDKMAdder, TTKAdder
 from qmath.utils.re_utils import re_numeric_int_binary_op, re_symbolic_int_binary_op, verify_re
 
 

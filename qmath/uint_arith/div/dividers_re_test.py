@@ -3,7 +3,7 @@ from psiqworkbench import QPU, QUInt, SymbolicQPU, SymbolicQubits, resource_esti
 from psiqworkbench.resource_estimation.qre._resource_dict import ResourceDict
 from psiqworkbench.symbolics import Parameter
 
-from qmath.div import TMVHDivider
+from qmath.uint_arith.div import TMVHDivider
 from qmath.utils.re_utils import verify_re, FILTERS_FOR_NUMERIC_RE
 
 
