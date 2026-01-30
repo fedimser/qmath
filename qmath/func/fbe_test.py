@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
-from psiqworkbench import QPU, QFixed
+from psiqworkbench import QPU, QFixed, QUFixed
 from psiqworkbench.filter_presets import BIT_DEFAULT
 
-from qmath.func.fbe import CosFbe, Log2Fbe, SinFbe
+from qmath.func.fbe import CosFbe, Log2Fbe, SinFbe, Pow2Segment
 from qmath.utils.test_utils import QPUTestHelper
 
 
@@ -60,3 +60,14 @@ def test_log2():
         result = qpu_helper.apply_op([x])
         expected = np.log2(x)
         assert abs(result - expected) < 2e-3
+
+
+def test_pow2_segment():
+    qpu = QPU(filters=BIT_DEFAULT)
+    qpu.reset(200)
+    qs_x = QUFixed(3, name="x", radix=3, qpu=qpu)
+    qs_x.write(0.625)
+    op = Pow2Segment(result_radix=22)
+    op.compute(qs_x)
+    result = op.get_result_qreg().read()
+    assert abs(result - 2**0.625) < 1e-3

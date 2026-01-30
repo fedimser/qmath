@@ -1,5 +1,5 @@
 import psiqworkbench.qubricks as qbk
-from psiqworkbench import QFixed
+from psiqworkbench import QUFixed
 from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
@@ -9,7 +9,7 @@ from ..utils.symbolic import SymbolicQFixed
 class Sqrt(Qubrick):
     """Computes sqrt(x).
 
-    If half_arg=True, coomputes sqrt(x/2).
+    If half_arg=True, computes sqrt(x/2).
 
     Uses qbk.Sqrt (which is designed for QUInt and halves result size) and then
     adds padding qubits so the output has the same size as input.
@@ -24,7 +24,7 @@ class Sqrt(Qubrick):
         super().__init__(**kwargs)
         self.half_arg = half_arg
 
-    def _compute(self, x: QFixed) -> QFixed:
+    def _compute(self, x: QUFixed):
         assert x.radix >= 0
         op = qbk.Sqrt()
         n_left_pad = x.radix // 2
@@ -55,10 +55,10 @@ class Sqrt(Qubrick):
         if n_right_pad > 0:
             right_pad = self.alloc_temp_qreg(n_right_pad, "right_pad")
 
-        self.set_result_qreg(QFixed(left_pad | ans | right_pad, radix=x.radix))
+        self.set_result_qreg(QUFixed(left_pad | ans | right_pad, radix=x.radix))
 
     def _estimate(self, x: SymbolicQFixed):
-        # Number of extra padding quibts added before calling Sqrt.
+        # Number of extra padding qubits added before calling Sqrt.
         r = (x.radix + int(self.half_arg)) % 2
 
         # Size of input to Sqrt.

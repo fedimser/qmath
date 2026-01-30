@@ -38,3 +38,11 @@ class Div2(Qubrick):
     def _compute(self, x: QUFixed, ctrl: Optional[Qubits] = None):
         t = self.alloc_temp_qreg(1, "t")
         rotate_right(t | x, ctrl=ctrl)
+
+
+class Mul2(Qubrick):
+    """Conditional multiplication by 2."""
+
+    def _compute(self, x: QUFixed, ctrl: Optional[Qubits] = None):
+        t = self.alloc_temp_qreg(1, "t")
+        rotate_left(x | t, ctrl=ctrl)

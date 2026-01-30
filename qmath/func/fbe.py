@@ -10,14 +10,12 @@ Reference:
 
 import math
 
-import psiqworkbench.qubricks as qbk
 from psiqworkbench import QFixed, QInt, Qubits, QUFixed, QUInt
-from psiqworkbench.qubits.base_qubits import BaseQubits
 from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from ..utils.gates import ParallelCnot, ParallelCnotCtrl, write_int
-from ..utils.rotate import Div2, rotate_left, rotate_right
+from ..utils.rotate import Div2, Mul2
 from ..utils.symbolic import alloc_temp_qreg_like
 from .bits import HighestSetBit
 from .common import AddConst, Negate, MultiplyConstAdd
@@ -219,3 +217,32 @@ class LogFbe(Qubrick):
             else:
                 MultiplyConstAdd(self.ans_multiplier).compute(ans, op.get_result_qreg())
         self.set_result_qreg(ans)
+
+
+class Pow2Segment(Qubrick):
+    """Computes log2(x) where 0<=x<1.
+
+    Reference: https://arxiv.org/abs/2001.00807, section 3.2.1.
+    """
+
+    def __init__(self, *, result_radix: None | int = None, **kwargs):
+        super().__init__(**kwargs)
+        self.result_radix = result_radix
+
+    def _sqrt(self, x: QUFixed) -> QUFixed:
+        op = Sqrt()
+        op.compute(x)
+        return op.get_result_qreg()
+
+    def _compute(self, x: QUFixed):
+        assert x.num_qubits == x.radix
+
+        a = QUFixed(self.alloc_temp_qreg(self.result_radix + 2, name="a"), radix=self.result_radix)
+        assert a.qpu is not None
+        a.write(1.0)
+
+        for i in range(x.radix):
+            Mul2().compute(a, ctrl=x[i])
+            a = self._sqrt(a)
+
+        self.set_result_qreg(a)
