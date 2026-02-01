@@ -15,12 +15,12 @@ from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from ..utils.gates import ParallelCnot, ParallelCnotCtrl, write_int
-from ..utils.rotate import Div2, Mul2
+from ..utils.perm import Div2, Mul2
 from ..utils.symbolic import alloc_temp_qreg_like
 from .bits import HighestSetBit
 from .common import AddConst, Negate, MultiplyConstAdd
 from .sqrt import Sqrt
-from .square import Square, SquareOptimized
+from .square import SquareOptimized
 
 
 def _sqrt_half(x: QFixed) -> QFixed:

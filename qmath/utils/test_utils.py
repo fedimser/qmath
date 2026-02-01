@@ -18,7 +18,7 @@ class QPUTestHelper:
         self.radix = radix
         self.num_qubits = num_qubits
 
-        self.qpu = QPU(filters=[">>64bit>>", ">>capture>>"])
+        self.qpu = QPU(filters=[">>capture>>"])
         self.qpu.reset(self.num_qubits)
         self.inputs = self._create_inputs(self.qpu)
         self.prep_length = len(self.qpu.get_instructions())
@@ -48,7 +48,7 @@ class QPUTestHelper:
     def apply_op(self, input_vals: list[float], check_no_side_effect=False) -> float:
         """Writes `input_vals` into inputs, applies compiled circuit and reads the result."""
         assert len(input_vals) == self.num_inputs
-        qpu = QPU(filters=[">>64bit>>", ">>bit-sim>>"])
+        qpu = QPU(filters=[">>bit-sim>>"])
         sim = qpu.get_filter_by_name(">>bit-sim>>")
 
         qpu.reset(self.num_qubits)

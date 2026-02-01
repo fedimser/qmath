@@ -79,6 +79,7 @@ smooth functions on an interval using piecewise polynomial approximation and par
   * Uses algorithm from [this paper](https://arxiv.org/abs/1712.08254).
 * [qmath/utils/lookup.py](qmath/utils/lookup.py) - table lookup from 
   [this paper](https://arxiv.org/pdf/1805.03662).
+* [qmath/utils/perm.py](qmath/utils/perm.py) - permutations and rotations.
 
 ## Resource estimation
 

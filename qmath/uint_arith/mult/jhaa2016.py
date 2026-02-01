@@ -4,7 +4,7 @@ from psiqworkbench.qubricks import Qubrick
 from psiqworkbench.symbolics.qubrick_costs import QubrickCosts
 
 from ...utils.gates import ccnot
-from ...utils.rotate import rotate_right
+from ...utils.perm import rotate_left
 from .multiplier import Multiplier
 
 
@@ -47,7 +47,7 @@ class JHHAMultipler(Qubrick):
 
         for i in range(n - 1):
             _add_nop(result[n - 1 : 2 * n], b1, a[i])
-            rotate_right(result)
+            rotate_left(result)
         _add_nop(result[n - 1 : 2 * n], b1, a[n - 1])
 
         z_cin.release()
